@@ -1,8 +1,10 @@
-# vibe-somnium / 织梦
+# a2a-literary-agents
 
-`vibe-somnium` is a docs-first project for a literary multi-agent system built around A2A communication, hard authority boundaries, and stable world logic.
+Working title / codename: `vibe-somnium / 织梦`
 
-中文名是 `织梦`。这个项目的核心判断是：现在很多 direct AI writing 的问题，不只是 prose 不够好，而是 authorial power 过于集中，导致世界、人物、冲突都会被当前 prompt 临时改写，最后产出的是可变形文本，不是稳定生长的 fiction。
+`a2a-literary-agents` is a docs-first project for literary multi-agent AI writing systems built around A2A communication, hard authority boundaries, and stable world logic.
+
+`vibe-somnium / 织梦` 是这个方向的 project codename。这个项目的核心判断是：现在很多 direct AI writing 的问题，不只是 prose 不够好，而是 authorial power 过于集中，导致世界、人物、冲突都会被当前 prompt 临时改写，最后产出的是可变形文本，不是稳定生长的 fiction。
 
 ## Core Premise
 
