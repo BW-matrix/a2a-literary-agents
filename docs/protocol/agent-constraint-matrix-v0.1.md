@@ -106,7 +106,7 @@ No other agent should be able to solve a scene problem by silently creating lore
 ## Immediate Follow-Ups
 
 1. Per-agent message allowlist at field level
-2. `DialogueWindow` payload shape
-3. `ScenePacket` payload shape
-4. public ledger vs private memory store boundaries
-5. canon mutation review checklist
+2. `ScenePacket` payload shape
+3. public ledger vs private memory store boundaries
+4. canon mutation review checklist
+5. dialogue-specific evaluation metrics
