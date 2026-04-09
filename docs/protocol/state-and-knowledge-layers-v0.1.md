@@ -219,7 +219,7 @@ Avoid using plain `public ledger` unless the context clearly means the public ev
 
 ## Immediate Follow-Ups
 
-1. define `ScenePacket` in terms of which layers it may read from
-2. define memory delta format for `private_memory`
-3. define event publication thresholds for `public_event_ledger`
-4. define reveal rules between `latent_canon` and `public_canon`
+1. define event publication thresholds for `public_event_ledger`
+2. define reveal rules between `latent_canon` and `public_canon`
+3. refine `ScenePacket` packet-to-memory handoff rules
+4. align canon review outcomes with storage-layer propagation

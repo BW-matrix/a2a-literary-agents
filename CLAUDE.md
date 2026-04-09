@@ -122,6 +122,7 @@ docs/
 │   ├── dialogue-window-schema-v0.1.md            # DialogueWindow payload 定义 + JSON 示例
 │   ├── scene-packet-schema-v0.1.md               # ScenePacket payload shape + commit semantics + narration bounds
 │   ├── memory-delta-format-v0.1.md               # MemoryDelta shape + writer rules + revision lineage
+│   ├── canon-mutation-review-checklist-v0.1.md   # CanonMutationRequest 审查流程 + decision outcomes + commit semantics
 │   └── state-and-knowledge-layers-v0.1.md        # 五层存储模型 + access matrix + promotion rules
 └── reference/
     └── terminology-index-v0.1.md                 # 规范术语表（80+ terms）
@@ -144,10 +145,11 @@ All documents are **v0.1** — stable enough to build on, open for refinement.
 | 5 | Terminology Index | ✅ done | `terminology-index-v0.1.md` |
 | 6 | **ScenePacket schema** | ✅ done | `scene-packet-schema-v0.1.md` |
 | 7 | **Memory delta format** | ✅ done | `memory-delta-format-v0.1.md` |
-| 8 | **Canon mutation review checklist** | 🔲 next | Canon Steward 审查新 canon 的标准流程 |
+| 8 | **Canon mutation review checklist** | ✅ done | `canon-mutation-review-checklist-v0.1.md` |
 | 9 | **Event publication thresholds** | 🔲 next | `public_event_ledger` 的发布阈值与升级规则 |
-| 10 | **Dialogue evaluation metrics** | 🔲 planned | 对话质量评估框架 |
-| 11 | **Minimal scene runner prototype** | 🔲 planned | 最小可运行原型 |
+| 10 | **ScenePacket-to-memory handoff rules** | 🔲 next | 场景包如何稳定地派生记忆增量 |
+| 11 | **Dialogue evaluation metrics** | 🔲 planned | 对话质量评估框架 |
+| 12 | **Minimal scene runner prototype** | 🔲 planned | 最小可运行原型 |
 
 ---
 

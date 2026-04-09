@@ -248,6 +248,6 @@ This document should be read together with:
 
 Next protocol priority after this document:
 
-1. canon mutation review checklist
-2. event publication thresholds for `public_event_ledger`
+1. event publication thresholds for `public_event_ledger`
+2. refine `ScenePacket` packet-to-memory handoff rules
 3. dialogue evaluation metrics

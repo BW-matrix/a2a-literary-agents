@@ -60,6 +60,9 @@ It is:
 | `Resolution` | message type | a world-side adjudicated result | use for consequence and success/failure | should remain world-owned | `communication-permission-matrix-v0.1.md` |
 | `StateDelta` | message type | the state change committed after resolution | use for changes to world or knowledge-bearing state | not the same as narration | `communication-permission-matrix-v0.1.md` |
 | `Pressure` | message type | structural or dramatic pressure introduced by plot logic | use for pressure, deadlines, or tension sources | not a fact by itself | `communication-permission-matrix-v0.1.md` |
+| `CanonMutationRequest` | message type | formal request for canon review | use when a proposed fact would alter, reveal, or extend canon | not the same as ordinary scene resolution | `canon-mutation-review-checklist-v0.1.md` |
+| `CanonDecision` | message type | steward-issued review outcome on a canon request | use for approval, rejection, or deferment of canon mutation | should always leave a traceable decision record | `canon-mutation-review-checklist-v0.1.md` |
+| `CanonDelta` | canon record | the recorded change produced by an approved canon decision | use for change-log entries that update canon layers | not a scene-state delta | `canon-mutation-review-checklist-v0.1.md` |
 | `DialogueWindow` | interaction unit | the default bounded unit for spoken interaction | use as the standard dialogue coordination unit | prefer this over single-line turn language | `dialogue-window-schema-v0.1.md` |
 | `ScenePacket` | packet type | committed scene-level packet for downstream rendering and memory | use for committed scene material and legal narrator input | primary schema now lives in `scene-packet-schema-v0.1.md` | `scene-packet-schema-v0.1.md` |
 | `ScenePressurePacket` | packet type | scene-level pressure bundle from plot logic | use for scene or beat pressure inputs | keep distinct from committed events | `communication-permission-matrix-v0.1.md` |
