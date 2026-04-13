@@ -219,7 +219,6 @@ Avoid using plain `public ledger` unless the context clearly means the public ev
 
 ## Immediate Follow-Ups
 
-1. define reveal rules between `latent_canon` and `public_canon`
-2. align canon review, publication, and handoff outcomes with storage-layer propagation
-3. dialogue evaluation metrics
-4. prototype a minimal scene runner once the protocol core stabilizes
+1. align canon review, publication, handoff, and reveal outcomes with storage-layer propagation
+2. dialogue evaluation metrics
+3. prototype a minimal scene runner once the protocol core stabilizes

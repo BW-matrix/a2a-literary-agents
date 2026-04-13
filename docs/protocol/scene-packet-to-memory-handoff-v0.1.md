@@ -257,6 +257,6 @@ This document should be read together with:
 
 Next protocol priority after this document:
 
-1. define reveal rules between `latent_canon` and `public_canon`
-2. align new handoff terms with the terminology index
-3. dialogue evaluation metrics
+1. align new handoff and reveal terms with the terminology index
+2. dialogue evaluation metrics
+3. prototype a minimal scene runner once protocol terminology stabilizes

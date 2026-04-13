@@ -39,6 +39,7 @@ Working title / codename: `vibe-somnium / 织梦`
 - [canon-mutation-review-checklist-v0.1](docs/protocol/canon-mutation-review-checklist-v0.1.md)
 - [event-publication-thresholds-v0.1](docs/protocol/event-publication-thresholds-v0.1.md)
 - [scene-packet-to-memory-handoff-v0.1](docs/protocol/scene-packet-to-memory-handoff-v0.1.md)
+- [latent-to-public-canon-reveal-rules-v0.1](docs/protocol/latent-to-public-canon-reveal-rules-v0.1.md)
 - [state-and-knowledge-layers-v0.1](docs/protocol/state-and-knowledge-layers-v0.1.md)
 - [terminology-index-v0.1](docs/reference/terminology-index-v0.1.md)
 
@@ -52,10 +53,9 @@ Working title / codename: `vibe-somnium / 织梦`
 
 ## Near-Term Roadmap
 
-1. Define reveal rules between `latent_canon` and `public_canon`
-2. Align new packet, memory, handoff, canon, and publication terms with the terminology index
-3. Define dialogue-specific evaluation metrics
-4. Prototype a minimal scene runner after the protocol core stabilizes
+1. Align new packet, memory, handoff, canon, publication, and reveal terms with the terminology index
+2. Define dialogue-specific evaluation metrics
+3. Prototype a minimal scene runner after the protocol core stabilizes
 
 ## Reference
 
