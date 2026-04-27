@@ -46,6 +46,7 @@ Important rule:
 
 - `Narrator Agent` should not render directly from raw `DialogueWindow`
 - it should render from committed state after world resolution
+- raw `DialogueWindow` should be projected by field-level visibility policy before any non-resolver agent sees it
 
 ## Payload Shape
 
@@ -154,6 +155,26 @@ Important rule:
 
 Those belong to `World Agent` resolution.
 
+## Field-Level Projection
+
+`DialogueWindow` is a mixed object. It contains resolver-facing tactic, target-visible speech material, narrator-eligible candidate material, and audit-only private strategy.
+
+For the full projection table, see [agent-context-packet-and-field-visibility-v0.1](agent-context-packet-and-field-visibility-v0.1.md).
+
+Default projection rules:
+
+| View | May see | Must not see |
+| --- | --- | --- |
+| `resolver_view` | `local_goal`, `stance`, `disclosure_policy`, `speech_acts`, `fallback_if_blocked`, `exit_condition` | raw chain-of-thought outside the submitted payload |
+| `target_visible_view` | speaker, addressee, spoken or externally legible surface material after it is actually expressed | `local_goal`, `must_not_reveal`, `can_lie`, `expected_effect`, hidden fallback |
+| `narrator_candidate_view` | candidate surface material only after world resolution or commitment | unresolved tactics, hidden disclosure policy, expected effect as fact |
+| `audit_only_view` | full submitted structure for validation and traceability | no direct agent delivery unless authorized |
+
+Important rule:
+
+- `candidate_lines` remain non-authoritative
+- even if a line appears in a `DialogueWindow`, it is not canonically spoken until the resolution and packet pipeline commits it
+
 ## Validation Rules
 
 | Rule | Behavior |
@@ -240,8 +261,11 @@ It should not treat it as:
 
 This document does not yet define:
 
-- `ScenePacket`
-- `Resolution` payload details
+- `NarratorInputPacket` projection details
 - dialogue-specific evaluation metrics
 
-Those should be defined next.
+Related runtime specs:
+
+- `agent-context-packet-and-field-visibility-v0.1.md`
+- `resolution-state-delta-commit-pipeline-v0.1.md`
+- `scene-packet-schema-v0.1.md`

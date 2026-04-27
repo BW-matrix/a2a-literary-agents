@@ -45,6 +45,7 @@ Important distinction:
 
 - one `ScenePacket` may generate zero, one, or many `MemoryDelta` objects
 - different owners may receive different deltas from the same scene packet
+- owner memory derivation should use `owner_projection`, not the full system `ScenePacket`
 
 ## Writer Rules
 
@@ -159,6 +160,7 @@ Important rule:
 | `memory_status = superseded` without `supersedes` refs | warn and request repair |
 | missing `source_packet_id` on world-written delta | warn; require route justification |
 | certainty omitted on `inference` or `suspicion` | warn and fill conservatively if needed |
+| memory content relies on pending publication or canon reveal candidate | reject until exposure or approval path is explicit |
 
 ## Commit Semantics
 
@@ -245,9 +247,11 @@ This document should be read together with:
 - `state-and-knowledge-layers-v0.1.md`
 - `scene-packet-schema-v0.1.md`
 - `agent-constraint-matrix-v0.1.md`
+- `scene-packet-to-memory-handoff-v0.1.md`
+- `agent-context-packet-and-field-visibility-v0.1.md`
 
 Next protocol priority after this document:
 
-1. define reveal rules between `latent_canon` and `public_canon`
-2. align handoff terms with the terminology index
-3. dialogue evaluation metrics
+1. memory retrieval policy for `CharacterContextPacket`
+2. adversarial trace fixtures for divergent memory and mistaken inference
+3. dialogue evaluation metrics after context assembly is stable

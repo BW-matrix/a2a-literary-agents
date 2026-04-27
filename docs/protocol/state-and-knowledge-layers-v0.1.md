@@ -108,6 +108,14 @@ It is useful for:
 | `public_canon` | read access | read access | read access | limited render-relevant access | full access | policy-summary access |
 | `latent_canon` | no direct access | limited resolution-relevant access | limited structure-relevant access | no direct access | full access | no routine access |
 
+Important runtime rule:
+
+- this access matrix defines maximum legal access
+- actual prompt/context delivery must go through `AgentContextPacket` and field-level projection
+- full ledger access should not be simulated by placing ledger summaries into every agent context
+
+For context assembly, see [agent-context-packet-and-field-visibility-v0.1](agent-context-packet-and-field-visibility-v0.1.md).
+
 ## Write Responsibility
 
 | Layer | Primary writer | Secondary writer | Notes |
@@ -204,6 +212,7 @@ This model implies several rules:
 2. `Plot Agent` may use high-level structure summaries, but not raw hidden truth as a free omniscient planning stream.
 3. `Character Agent` should reason from `private_memory`, `public_event_ledger`, visible observations, and `public_canon`.
 4. `World Agent` is the main bridge between objective change and distributed knowledge.
+5. `Orchestrator` should deliver projected views, not complete system objects, when assembling agent contexts.
 
 ## Terminology Recommendation
 
@@ -219,6 +228,7 @@ Avoid using plain `public ledger` unless the context clearly means the public ev
 
 ## Immediate Follow-Ups
 
-1. align canon review, publication, handoff, and reveal outcomes with storage-layer propagation
-2. dialogue evaluation metrics
-3. prototype a minimal scene runner once the protocol core stabilizes
+1. public scope registry and audience membership model
+2. canon-vs-state classification checklist
+3. memory retrieval policy for `CharacterContextPacket`
+4. adversarial protocol trace fixtures before autonomous runner work

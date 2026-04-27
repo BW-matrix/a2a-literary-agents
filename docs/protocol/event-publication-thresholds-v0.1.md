@@ -33,15 +33,16 @@ Event publication should satisfy these constraints:
 Recommended flow:
 
 1. `World Agent` resolves scene outcomes into committed state
-2. `ScenePacket` carries `resolved_events`, `visibility_deltas`, and optional `public_event_deltas`
+2. `ScenePacket` carries `resolved_events`, `visibility_deltas`, and optional `publication_candidates`
 3. publication thresholds are checked against committed material
-4. qualifying items are written into `public_event_ledger`
+4. qualifying items are written into `public_event_ledger` as approved `public_event_deltas`
 5. downstream agents may reason from published summaries according to the recorded scope
 
 Important rule:
 
 - publication happens after committed consequence
 - publication does not itself create world truth; it only upgrades who may treat the event as shared knowledge
+- `publication_candidates` are not public event entries until this threshold policy approves them
 
 ## Core Distinction
 
@@ -112,6 +113,20 @@ Suggested fields for a published event entry:
 | `certainty` | recommended | low, medium, high |
 | `contestability` | optional | uncontested, disputed, or unclear |
 | `based_on` | recommended | supporting refs such as visibility or report evidence |
+
+## Candidate vs Approved Delta
+
+Two-phase naming should remain explicit:
+
+| Stage | Field | Meaning |
+| --- | --- | --- |
+| candidate | `publication_candidates` | committed scene material may qualify for publication |
+| approved | `public_event_deltas` | publication threshold passed and `public_event_ledger` may be updated |
+
+Important rule:
+
+- `Narrator Agent` and `Character Agent` should not treat a publication candidate as socially shared knowledge
+- approved publication still requires scope-aware query rules before entering a specific character's `private_memory`
 
 ## Scope Rules
 
@@ -210,9 +225,10 @@ This document should be read together with:
 - `state-and-knowledge-layers-v0.1.md`
 - `scene-packet-schema-v0.1.md`
 - `memory-delta-format-v0.1.md`
+- `resolution-state-delta-commit-pipeline-v0.1.md`
 
 Next protocol priority after this document:
 
-1. define reveal rules between `latent_canon` and `public_canon`
-2. align publication and handoff terms with the terminology index
-3. dialogue evaluation metrics
+1. public scope registry and audience membership model
+2. adversarial trace fixtures for false public reports and over-broad publication
+3. memory retrieval and encounter policy for published events

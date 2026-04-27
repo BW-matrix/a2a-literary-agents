@@ -21,13 +21,16 @@ Working title / codename: `vibe-somnium / 织梦`
 
 ## Current Focus
 
-当前阶段先不做 product，不急着做 UI，也不先做 full implementation。先把 protocol 和约束体系定义清楚：
+当前阶段先不做 product，不急着做 UI，也不先做 full implementation。先把 protocol 和约束体系定义清楚，并把 conceptual authority boundaries 加固成 runtime context boundaries：
 
 - communication constraints
 - permission constraints
 - event bus validation behavior
 - scene execution cadence
 - canon mutation policy
+- per-agent context assembly
+- world adjudication and commit pipeline
+- plot pressure budget
 
 ## Documents
 
@@ -35,6 +38,9 @@ Working title / codename: `vibe-somnium / 织梦`
 - [agent-constraint-matrix-v0.1](docs/protocol/agent-constraint-matrix-v0.1.md)
 - [dialogue-window-schema-v0.1](docs/protocol/dialogue-window-schema-v0.1.md)
 - [scene-packet-schema-v0.1](docs/protocol/scene-packet-schema-v0.1.md)
+- [agent-context-packet-and-field-visibility-v0.1](docs/protocol/agent-context-packet-and-field-visibility-v0.1.md)
+- [resolution-state-delta-commit-pipeline-v0.1](docs/protocol/resolution-state-delta-commit-pipeline-v0.1.md)
+- [scene-pressure-packet-and-plot-budget-v0.1](docs/protocol/scene-pressure-packet-and-plot-budget-v0.1.md)
 - [memory-delta-format-v0.1](docs/protocol/memory-delta-format-v0.1.md)
 - [canon-mutation-review-checklist-v0.1](docs/protocol/canon-mutation-review-checklist-v0.1.md)
 - [event-publication-thresholds-v0.1](docs/protocol/event-publication-thresholds-v0.1.md)
@@ -53,9 +59,9 @@ Working title / codename: `vibe-somnium / 织梦`
 
 ## Near-Term Roadmap
 
-1. Align new packet, memory, handoff, canon, publication, and reveal terms with the terminology index
-2. Define dialogue-specific evaluation metrics
-3. Prototype a minimal scene runner after the protocol core stabilizes
+1. Design adversarial protocol trace fixtures for hidden theft, false public report, partial reveal, narrator leak, world overreach, and plot railroading
+2. Define narration grounding validation and dialogue-specific evaluation metrics
+3. Prototype a paper scene runner before building an autonomous minimal scene runner
 
 ## Reference
 

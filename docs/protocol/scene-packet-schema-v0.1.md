@@ -10,7 +10,7 @@ It is the main structure that turns "resolved scene reality" into "legal narrati
 
 `ScenePacket` exists to solve four protocol problems at once:
 
-1. give `Narrator Agent` one legal factual input object
+1. give `Orchestrator` one committed source object from which `NarratorInputPacket` can be projected
 2. prevent raw `DialogueWindow` or hidden world state from being narrated directly
 3. separate resolved consequence from mere proposal or pressure
 4. provide a stable bridge from scene execution into memory and manuscript layers
@@ -36,12 +36,13 @@ Recommended loop:
 3. active `Character Agent` submits `Intent`, `ActionProposal`, or `DialogueWindow`
 4. `World Agent` resolves outcomes and commits state change
 5. `Orchestrator` assembles committed material into `ScenePacket`
-6. `Narrator Agent` renders prose from committed `ScenePacket`
+6. `Narrator Agent` renders prose from `NarratorInputPacket` projected from committed material
 7. memory layers and manuscript layers inherit from the packet rather than from raw proposals
 
 Important rule:
 
-- `Narrator Agent` may read committed `ScenePacket`
+- complete `ScenePacket` is a system object, not a default agent prompt object
+- `Narrator Agent` may read `NarratorInputPacket` projected from committed `ScenePacket`
 - `Narrator Agent` may not read raw hidden truth, rejected branches, or unresolved proposals as factual input
 
 ## Source Layers and Read Policy
@@ -72,11 +73,18 @@ The fields below describe the packet payload.
 | `resolved_events` | yes | array | what objectively happened in this packet span |
 | `state_deltas` | yes | array | committed changes to world state |
 | `visibility_deltas` | recommended | array | what became visible to whom |
-| `public_event_deltas` | recommended | array | what entered public/shared knowledge |
+| `publication_candidates` | optional | array | committed material that may qualify for `public_event_ledger` after threshold review |
+| `public_event_deltas` | optional | array | approved publication records only |
 | `authorized_interiority` | optional | array | explicitly permitted inner material for narration |
-| `canon_effects` | optional | array | canon reveals or canon-relevant consequences included in the packet |
+| `canon_reveal_candidates` | optional | array | committed material that may expose `latent_canon` but still needs governance |
+| `canon_effects_committed` | optional | array | approved canon reveal or mutation effects only |
 | `narration_bounds` | recommended | object | what narration may compress, must preserve, or must not claim |
 | `based_on` | recommended | array | source resolution ids, state refs, or packet lineage |
+
+Compatibility note:
+
+- older drafts used `public_event_deltas` and `canon_effects` for both candidates and committed effects
+- going forward, candidate fields and approved delta fields should be kept separate
 
 ## `pov_contract`
 
@@ -162,23 +170,47 @@ Important rule:
 - absence of `authorized_interiority` should be treated as absence of permission
 - narrator must not infer full interiority from consequence alone unless the POV contract allows it
 
-## `canon_effects`
+## `publication_candidates` and `public_event_deltas`
 
-`canon_effects` should only appear when the packet includes a canon-relevant reveal or consequence.
+`publication_candidates` should only mark that committed scene material might qualify for public event publication.
+
+Suggested candidate shape:
+
+| Field | Required | Meaning |
+| --- | --- | --- |
+| `candidate_id` | yes | stable candidate id |
+| `source_event_ids` | yes | committed events that might support publication |
+| `publication_mode_hint` | recommended | possible threshold class |
+| `proposed_scope` | recommended | possible public scope |
+| `public_summary_candidate` | yes | what could be published if approved |
+| `review_status` | yes | candidate, approved, rejected, or deferred |
+
+Important rule:
+
+- `publication_candidates` are not yet `public_event_ledger` entries
+- `public_event_deltas` should appear only after threshold approval
+
+## `canon_reveal_candidates` and `canon_effects_committed`
+
+`canon_reveal_candidates` should only appear when the packet includes committed material that may legally expose hidden canon.
 
 Suggested shape:
 
 | Field | Required | Meaning |
 | --- | --- | --- |
-| `effect_kind` | yes | reveal, clarification, mutation_request, mutation_approved |
+| `candidate_id` | yes | stable reveal candidate id |
 | `canon_ref` | recommended | which canon element is affected |
-| `effect_summary` | yes | what changed or was revealed |
-| `review_status` | yes | pending, approved, rejected, not_needed |
+| `reveal_basis` | yes | committed event, evidence, testimony, or declaration basis |
+| `exposure_scope` | recommended | who may legally access the exposure |
+| `review_status` | yes | candidate, approved, rejected, deferred |
+
+`canon_effects_committed` should appear only after `Canon Steward` approval or an explicit no-review-needed decision.
 
 Important rule:
 
 - raw `latent_canon` should not be injected into narration through this field
-- only legalized reveal material belongs here
+- candidates must not be narrated as approved public canon
+- only legalized reveal material belongs in `canon_effects_committed`
 
 ## `narration_bounds`
 
@@ -209,6 +241,7 @@ Suggested shape:
 - free omniscient hidden truth
 - raw chain-of-thought dumps
 - unapproved latent canon presented as public fact
+- candidate publication or reveal material presented as approved delta
 
 ## Commit Semantics
 
@@ -217,13 +250,29 @@ A `ScenePacket` should count as `committed` only when all of the following are t
 1. included `resolved_events` already have world adjudication
 2. included `state_deltas` have been accepted as committed world change
 3. visibility consequences have been resolved to the needed level
-4. any canon-relevant content is either approved, explicitly marked pending, or excluded from factual narration
-5. the packet has been sealed by `Orchestrator` with source references
+4. any publication-relevant content is clearly separated as candidate or approved publication
+5. any canon-relevant content is either approved, explicitly marked as candidate, or excluded from factual narration
+6. the packet has been sealed by `Orchestrator` with source references
 
 Narrator rule:
 
-- `commit_status = committed` is required for factual narration
+- `commit_status = committed` is required before `NarratorInputPacket` can be projected
 - draft packets may be reviewed by system layers but must not be treated as legal prose source material
+- pending `publication_candidates` and `canon_reveal_candidates` must be excluded from factual narration unless separately approved and projected
+
+For the full commit pipeline and two-phase semantics, see [resolution-state-delta-commit-pipeline-v0.1](resolution-state-delta-commit-pipeline-v0.1.md).
+
+## Projection Rule
+
+Complete `ScenePacket` should remain system-level. Agents receive views:
+
+| View | Recipient | Purpose |
+| --- | --- | --- |
+| `ScenePacketView` | eligible Character, Plot, World, or Canon roles | role-specific committed slice |
+| `NarratorInputPacket` | `Narrator Agent` | legal factual prose input |
+| `owner_projection` | packet-to-memory handoff | owner-specific memory derivation |
+
+For field-level projection, see [agent-context-packet-and-field-visibility-v0.1](agent-context-packet-and-field-visibility-v0.1.md).
 
 ## Example
 
@@ -275,6 +324,7 @@ Narrator rule:
       "certainty": "medium"
     }
   ],
+  "publication_candidates": [],
   "public_event_deltas": [],
   "authorized_interiority": [
     {
@@ -285,7 +335,8 @@ Narrator rule:
       "scope_limit": "this_packet_only"
     }
   ],
-  "canon_effects": [],
+  "canon_reveal_candidates": [],
+  "canon_effects_committed": [],
   "narration_bounds": {
     "must_preserve": [
       "Wei does not confess",
@@ -316,9 +367,11 @@ This document should be read together with:
 - `dialogue-window-schema-v0.1.md`
 - `state-and-knowledge-layers-v0.1.md`
 - `communication-permission-matrix-v0.1.md`
+- `agent-context-packet-and-field-visibility-v0.1.md`
+- `resolution-state-delta-commit-pipeline-v0.1.md`
 
 Next protocol priority after this document:
 
-1. align reveal and handoff terms with the terminology index
-2. dialogue evaluation metrics
-3. prototype a minimal scene runner once protocol terminology stabilizes
+1. design adversarial trace fixtures for packet projection and candidate leakage
+2. define narration grounding validation against `NarratorInputPacket`
+3. prototype a paper scene runner before autonomous execution

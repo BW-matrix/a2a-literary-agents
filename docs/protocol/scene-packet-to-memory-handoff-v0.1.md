@@ -41,7 +41,8 @@ Recommended flow:
 
 Important distinction:
 
-- `ScenePacket` is a shared committed source object
+- complete `ScenePacket` is a system committed source object
+- handoff receives an owner-specific `owner_projection`, not a full packet dump
 - `MemoryDelta` output remains owner-divergent
 
 ## Core Rule: No Automatic Full-Packet Duplication
@@ -99,9 +100,11 @@ Different packet fields contribute to memory in different ways.
 | `resolved_events` | yes | `observation`, `noticed_absence`, limited `received_report` | only for owners who witnessed, participated in, or were directly informed by the event |
 | `state_deltas` | limited | `observation`, `emotional_aftereffect`, `self_commitment` seed | only when the owner is directly affected or can plausibly perceive the effect |
 | `visibility_deltas` | yes | `observation`, `inference`, `suspicion` seed | strongest basis for owner-specific knowledge distribution |
-| `public_event_deltas` | conditional | `received_report`, `observation` | do not auto-copy into every owner; require an encounter path |
+| `publication_candidates` | no direct memory write | none | candidate publication is not yet public knowledge |
+| `public_event_deltas` | conditional | `received_report`, `observation` | approved publications only; do not auto-copy into every owner; require an encounter path |
 | `authorized_interiority` | yes, but tightly scoped | `emotional_aftereffect`, `recollection`, owner-authorized `belief_revision` seed | do not convert one owner's interiority into another owner's memory |
-| `canon_effects` | conditional | `received_report`, `belief_revision` | only if the owner is legally exposed to the reveal in the packet span |
+| `canon_reveal_candidates` | no direct memory write | none | candidate reveal is not yet owner-legal canon knowledge unless separately exposed |
+| `canon_effects_committed` | conditional | `received_report`, `belief_revision` | only if the owner is legally exposed to the approved reveal in the packet span |
 | `narration_bounds` | no direct content write | none | constrains prose, not memory content |
 
 ## Writer Split During Handoff
@@ -177,6 +180,7 @@ The handoff may not produce:
 - narrator-only compression as memory content
 - public publication duplicated into all private memories without an encounter path
 - raw hidden canon unless the owner is legally exposed within the packet
+- pending publication or canon reveal candidates stored as if approved
 
 ## Commit Semantics
 
@@ -254,9 +258,11 @@ This document should be read together with:
 - `scene-packet-schema-v0.1.md`
 - `memory-delta-format-v0.1.md`
 - `event-publication-thresholds-v0.1.md`
+- `agent-context-packet-and-field-visibility-v0.1.md`
+- `resolution-state-delta-commit-pipeline-v0.1.md`
 
 Next protocol priority after this document:
 
-1. align new handoff and reveal terms with the terminology index
-2. dialogue evaluation metrics
-3. prototype a minimal scene runner once protocol terminology stabilizes
+1. design adversarial trace fixtures for owner projection and candidate leakage
+2. define memory retrieval policy for `CharacterContextPacket`
+3. prototype a paper scene runner before autonomous execution

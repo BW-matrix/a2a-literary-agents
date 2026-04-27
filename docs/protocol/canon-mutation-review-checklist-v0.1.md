@@ -13,7 +13,7 @@ This checklist exists to solve five protocol problems:
 1. give `Canon Steward` a concrete review path instead of a vague gatekeeping role
 2. distinguish real canon mutation from ordinary scene resolution or public event publication
 3. prevent ad hoc patches introduced only to rescue a scene
-4. preserve consistency across `Immutable Canon`, `latent_canon`, `public_canon`, and `Emergent Canon`
+4. preserve consistency across immutable foundations, `latent_canon`, `public_canon`, and emergent canon provenance
 5. ensure any accepted canon change is traceable, classified, and propagated
 
 Without a review checklist, `canon steward decides canon mutation` remains a slogan rather than a reliable governance layer.
@@ -101,7 +101,7 @@ Each request should be checked against the following questions.
 | --- | --- | --- | --- |
 | Classification | Is this actually a canon mutation rather than a scene-state issue? | request truly changes, clarifies, reveals, or promotes canon | redirect to world-state, event-publication, or memory workflow |
 | Necessity | Is new canon really needed? | existing canon cannot already explain the case cleanly | reject or downgrade to clarification of existing material |
-| Layer fit | Does the request target the correct canon layer? | request cleanly fits `public_canon`, `latent_canon`, or `Emergent Canon` | defer until layer is clarified |
+| Layer fit | Does the request target the correct canon layer and origin? | request cleanly fits `public_canon` or `latent_canon`, with emergent provenance recorded separately when applicable | defer until layer is clarified |
 | Non-contradiction | Does it avoid conflict with `Immutable Canon` and established canon? | no contradiction, or conflict is explicitly handled by a higher-order override path | reject |
 | Causal continuity | Does prior scene logic remain coherent if this is accepted? | earlier packets, ledgers, and role behavior still make sense | defer or reject pending repair |
 | Scope discipline | Is the mutation minimal rather than a convenience patch? | proposal solves the real need without over-expanding the world | request narrower rewrite |
@@ -118,7 +118,7 @@ Suggested outcomes:
 | --- | --- | --- |
 | `approved_public` | accepted as public canon | update `public_canon` and canon change log |
 | `approved_latent` | accepted but remains hidden | update `latent_canon` and canon change log |
-| `approved_emergent` | accepted as new growth canon | update `Emergent Canon` and canon change log |
+| `approved_emergent` | accepted as new growth canon provenance | record canon origin as emergent, then assign visibility as public, latent, or scoped |
 | `clarify_existing` | no new canon added; existing canon clarified | link to existing canon refs, no new canon layer entry required |
 | `deferred` | request is plausible but under-specified | no canon change yet; return repair needs |
 | `rejected` | request is invalid, contradictory, or abusive | no canon change; preserve decision record |
@@ -127,6 +127,7 @@ Important rule:
 
 - every non-approval outcome should still produce a review record
 - silence is not a valid canon decision
+- `Emergent Canon` should be treated as origin/provenance, not as a third visibility layer parallel to `public_canon` and `latent_canon`
 
 ## Hard Boundaries
 
@@ -196,9 +197,10 @@ This document should be read together with:
 - `communication-permission-matrix-v0.1.md`
 - `state-and-knowledge-layers-v0.1.md`
 - `scene-packet-schema-v0.1.md`
+- `resolution-state-delta-commit-pipeline-v0.1.md`
 
 Next protocol priority after this document:
 
-1. align canon, reveal, and handoff terms with the terminology index
-2. dialogue evaluation metrics
-3. prototype a minimal scene runner once protocol terminology stabilizes
+1. canon-vs-state classification checklist
+2. reveal governance unification between `CanonMutationRequest` and `canon_reveal_candidates`
+3. adversarial trace fixtures for canon leak and retroactive rescue patch

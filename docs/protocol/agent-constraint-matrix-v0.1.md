@@ -19,11 +19,11 @@ The goal is not to freeze every detail right now, but to create a stable matrix 
 | --- | --- | --- | --- | --- | --- | --- |
 | Primary communication question | What do I want, do, or say now? | What actually happens next? | What pressure enters now? | How does committed state become prose? | Can this new fact legally exist? | Can the system route this safely? |
 | Normal outbound message types | `Intent`, `ActionProposal`, `DialogueWindow`, `SelfNote` | `Observation`, `Resolution`, `StateDelta`, `CanonQuery`, `CanonMutationRequest` | `Pressure`, `EscalationSeed`, `ScenePressurePacket` | `Narration`, `SceneDraft`, `StyleNote` | `CanonDecision`, `CanonDelta`, `CanonClarification` | `Warning`, `RepairRequest`, `RouteNotice`, `ScenePacket`, `QuarantineNotice` |
-| Normal inbound message types | `Observation`, public `Pressure`, `Warning`, visible `ScenePacket` | `Intent`, `ActionProposal`, `DialogueWindow`, `CanonDecision`, `Warning` | public `ScenePacket`, structure summary, `Warning` | committed `ScenePacket`, approved style guide, `Warning` | `CanonQuery`, `CanonMutationRequest`, `Warning` | all envelopes, validation metadata |
+| Normal inbound message types | `Observation`, public `Pressure`, `Warning`, projected `ScenePacketView` | `Intent`, `ActionProposal`, `DialogueWindow`, `CanonDecision`, `Warning` | projected `ScenePacketView`, structure summary, `Warning` | `NarratorInputPacket`, approved style guide, `Warning` | `CanonQuery`, `CanonMutationRequest`, `CanonReviewContext`, `Warning` | all envelopes, validation metadata |
 | Default target | `world` | involved agents, event bus, `canon steward` if needed | scene bus, `world`, or structure bus | manuscript layer | `world` and `orchestrator` | any agent or system layer |
 | Default visibility | `private_self` for raw cognition; `private_target` for transformed proposals | `system_restricted` until state is committed | `scene_public` for active pressure; `system_restricted` for structure-only notes | `system_restricted` until prose is committed | `system_restricted` | `system_restricted` |
 | Raw cognition exposure rule | self only | no raw access | no raw access | limited to explicit POV-authorized extracts | no raw access | no raw access |
-| Missing-field handling | warn and request repair | warn and hold unsafe resolution | warn and downgrade or defer | warn and defer render | warn and defer decision | normalize if safe; repair or quarantine if not |
+| Missing-field handling | warn and request repair | warn and hold unsafe resolution | warn and downgrade or defer | warn and defer render | warn and defer decision | normalize recoverable fields only; quarantine unsafe security-critical gaps |
 | Ambiguity handling | clarify intent or narrow scope | ask for repair before consequence commit | downgrade pressure or defer to next beat | ask for grounded packet before render | require rationale before canon decision | issue route warning and preserve flow |
 | Privacy breach handling | quarantine outbound message | quarantine unsafe input and refuse hidden-mind inference | quarantine leaked private cognition | reject render built on unauthorized cognition | quarantine request | quarantine envelope and notify sender |
 | Hard block if message attempts to | declare objective outcome, declare other minds, alter canon | bypass canon, ignore rules for drama, write inner minds | puppet characters, declare facts, edit canon | invent facts, leak latent canon, rewrite committed events | alter immutable canon or decide scene outcome | rewrite creative content or hide authority breach |
@@ -40,7 +40,7 @@ The goal is not to freeze every detail right now, but to create a stable matrix 
 | Core authority | will, motive, choice, self-interpretation | consequence, causality, state transition | pressure, tension, structural escalation | prose, voice, rendering | canon review and canon mutation approval | routing, validation, scheduling |
 | May read public event ledger | allow | allow | allow | limited, committed packets only | allow | limited, metadata and route state only |
 | May read world state ledger | no direct access | allow | limited, summary only | no direct access | limited, canon-relevant access | limited, route-relevant access only |
-| May read current scene state | limited, visible facts only | allow | limited, summarized or structure-relevant view | limited, committed packet only | limited, canon-relevant slice only | limited, routing-relevant metadata only |
+| May read current scene state | limited, visible facts only through `CharacterContextPacket` | allow | limited, summarized or structure-relevant view through `PlotContextSummary` | limited, `NarratorInputPacket` only | limited, canon-relevant slice only | limited, routing-relevant metadata and projection policy only |
 | May read public canon | allow | allow | allow | limited, only what render needs | allow | limited, policy summary only |
 | May read latent canon | no | limited, only resolution-relevant parts | limited, only structure-relevant parts | no | allow | no by default |
 | May read own private memory | allow | no | no | no | no | no |
@@ -50,12 +50,12 @@ The goal is not to freeze every detail right now, but to create a stable matrix 
 | May write world state ledger | no | allow, through committed `Resolution` and `StateDelta` | no | no | no | no |
 | May commit world state | no | allow | no | no | no | no |
 | May commit manuscript text | no | no | no | allow | no | no |
-| May commit canon | no | no direct canon write | no | no | allow, `Emergent Canon` only | no |
+| May commit canon | no | no direct canon write | no | no | allow through `CanonDecision` and `CanonDelta`; emergent origin still needs public, latent, or scoped visibility | no |
 | May request canon mutation | indirect only, through world-detected gap | allow | no | no | not applicable | no |
 | May declare self subjective state | allow | no | not applicable | limited, only when packet grants interior access | no | no |
 | May declare another agent's subjective state | no | no | no | limited, only when committed POV packet explicitly provides it | no | no |
 | May declare objective result | no | allow | no | no | no | no |
-| May declare structural pressure | no | limited, only as environment consequence and never as authorial design | allow | no | no | no |
+| May declare structural pressure | no | limited, only as environment consequence and never as authorial design | allow through `ScenePressurePacket` and pressure budget | no | no | no |
 | May reinterpret committed events | limited, subjective only and non-binding | no | limited, structural only and non-factual | allow, stylistic only and non-factual | no | no |
 | May change point of view | no | no | no | limited, only within scene packet and style policy | no | no |
 | May override another agent | no | no | no | no | limited, may reject canon mutation but not rewrite scenes | limited, may block or reroute but not rewrite content |
@@ -71,6 +71,8 @@ Malformed communication should usually trigger `warning`, `repair`, or `normaliz
 Authority violations should trigger `quarantine` or `hard block`.
 
 This keeps the system resilient without letting roles melt together.
+
+Security-critical field failures are not ordinary malformed communication. Missing or ambiguous `sender`, `message_type`, `visibility`, `target`, `authority_basis`, or `authorized_interiority.scope_limit` should quarantine or require explicit repair unless the route context has exactly one legal value.
 
 ### 2. Private cognition, public consequence
 
@@ -99,16 +101,18 @@ This is the main protection against slow, over-fragmented scene execution.
 
 It may not add new facts, recover rejected branches, or smuggle latent canon into prose.
 
+Operationally, `Narrator Agent` should receive `NarratorInputPacket`, not the complete system `ScenePacket`.
+
 ### 5. Canon growth is explicit
 
-`Emergent Canon` is allowed, but it must be reviewed and committed explicitly.
+Emergent canon provenance is allowed, but it must be reviewed and committed explicitly.
 
 No other agent should be able to solve a scene problem by silently creating lore.
 
 ## Immediate Follow-Ups
 
-1. Per-agent message allowlist at field level
-2. `ScenePacket` payload shape
-3. memory delta format for `private_memory`
-4. canon mutation review checklist
-5. dialogue-specific evaluation metrics
+1. adversarial protocol trace fixtures for hidden theft, false report, narrator leak, world overreach, and plot railroading
+2. narration grounding validator against `NarratorInputPacket`
+3. public scope registry and audience membership model
+4. canon-vs-state classification checklist
+5. dialogue-specific evaluation metrics after runtime authority fixtures exist

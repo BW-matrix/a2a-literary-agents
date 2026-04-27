@@ -12,7 +12,7 @@
 | Codename | `vibe-somnium / 织梦` |
 | Author | Bowen Qi |
 | License | Code: Apache-2.0 · Docs: CC BY 4.0 |
-| Stage | **docs-first protocol design** — 尚未进入实现阶段 |
+| Stage | **docs-first runtime protocol hardening** — 尚未进入实现阶段 |
 
 ### 一句话定位
 
@@ -65,6 +65,7 @@
 - `plot provides pressure, not destiny` — plot 提供张力而非命运
 - `narrator cannot invent facts` — narrator 只能从 committed scene packet 渲染，不能自造事实
 - `character decides intent, world decides consequence` — 意图与后果分属不同 agent
+- `complete objects are system objects; agents receive projected views` — 完整对象不默认进入任何 agent prompt
 
 ---
 
@@ -96,7 +97,7 @@
 | --- | --- | --- |
 | `Immutable Canon` | 基础世界法则 | 无 |
 | `Latent Canon` | 存在但未揭示 | 仅揭示，不修改 |
-| `Emergent Canon` | 创作中新生成的设定 | Canon Steward after review |
+| `Emergent Canon` | 创作中新生成设定的来源属性 | Canon Steward after review；visibility 另行标为 public / latent / scoped |
 
 ### 5.4 Visibility Layers
 
@@ -121,6 +122,9 @@ docs/
 │   ├── agent-constraint-matrix-v0.1.md           # 实现级：constraint × agent 展开表
 │   ├── dialogue-window-schema-v0.1.md            # DialogueWindow payload 定义 + JSON 示例
 │   ├── scene-packet-schema-v0.1.md               # ScenePacket payload shape + commit semantics + narration bounds
+│   ├── agent-context-packet-and-field-visibility-v0.1.md # AgentContextPacket + field-level projection rules
+│   ├── resolution-state-delta-commit-pipeline-v0.1.md # Resolution / StateDelta / two-phase commit pipeline
+│   ├── scene-pressure-packet-and-plot-budget-v0.1.md # ScenePressurePacket schema + Plot pressure budget
 │   ├── memory-delta-format-v0.1.md               # MemoryDelta shape + writer rules + revision lineage
 │   ├── canon-mutation-review-checklist-v0.1.md   # CanonMutationRequest 审查流程 + decision outcomes + commit semantics
 │   ├── event-publication-thresholds-v0.1.md      # public_event_ledger 的发布阈值 + publication scope + contestability
@@ -152,20 +156,24 @@ All documents are **v0.1** — stable enough to build on, open for refinement.
 | 9 | **Event publication thresholds** | ✅ done | `event-publication-thresholds-v0.1.md` |
 | 10 | **ScenePacket-to-memory handoff rules** | ✅ done | `scene-packet-to-memory-handoff-v0.1.md` |
 | 11 | **Latent-to-public canon reveal rules** | ✅ done | `latent-to-public-canon-reveal-rules-v0.1.md` |
-| 12 | **Dialogue evaluation metrics** | 🔲 next | 对话质量评估框架 |
-| 13 | **Minimal scene runner prototype** | 🔲 planned | 最小可运行原型 |
+| 12 | **AgentContextPacket + field visibility** | ✅ done | `agent-context-packet-and-field-visibility-v0.1.md` |
+| 13 | **Resolution / StateDelta / commit pipeline** | ✅ done | `resolution-state-delta-commit-pipeline-v0.1.md` |
+| 14 | **ScenePressurePacket + Plot pressure budget** | ✅ done | `scene-pressure-packet-and-plot-budget-v0.1.md` |
+| 15 | **Adversarial protocol trace fixtures** | 🔲 next | hidden theft, false report, partial reveal, narrator leak, world overreach, plot railroading |
+| 16 | **Narration grounding + dialogue evaluation metrics** | 🔲 planned | prose grounding and dialogue quality evaluation |
+| 17 | **Paper scene runner, then minimal runner prototype** | 🔲 planned | 先手动 trace，再自动化 |
 
 ---
 
 ## 8. Open Design Questions (from v0.1 docs)
 
-1. Per-agent message allowlist table at field-level granularity
-2. Whether `DialogueWindow` should contain candidate lines or only speech acts
+1. How to format adversarial protocol trace fixtures before implementation
+2. Whether `DialogueWindow` should contain candidate lines or only speech acts in high-risk scenes
 3. How much of private cognition may be selectively exposed to narrator in close POV modes
 4. How scene packets should be summarized for long-form memory retention
-5. Whether world resolution should be deterministic, probabilistic, or hybrid
-6. How `public_event_ledger` entries should interact with owner memory after later encounter
-7. How scoped reveal outcomes should propagate across local, institutional, and wider public reasoning without collapsing into global omniscience
+5. How `public_event_ledger` entries should interact with owner memory after later encounter
+6. How scoped reveal outcomes should propagate across local, institutional, and wider public reasoning without collapsing into global omniscience
+7. How to validate narration grounding without overbuilding an automated theorem prover
 
 ---
 
@@ -194,6 +202,7 @@ All documents are **v0.1** — stable enough to build on, open for refinement.
 3. **引入新术语时，先更新 `terminology-index-v0.1.md`**
 4. **保持 agent 权限边界**——在设计中不要让任何 agent 越权
 5. **优先推进 roadmap 上标记为 🔲 next 的任务**
+6. **不要把完整 system object 直接塞给 agent**；先通过 `AgentContextPacket` / projected view 组包
 
 ## 11. What You Should NOT Do
 
@@ -214,23 +223,25 @@ message_id · message_type · sender · target
 scene_id · window_id · visibility · payload · based_on
 ```
 
-Missing fields should trigger soft recovery (warn, normalize, repair), not hard crash. Only authority violations (sender doesn't have permission) trigger quarantine.
+Missing recoverable fields should trigger soft recovery (warn, normalize, repair), not hard crash.
+
+Security-critical fields such as `sender`, `message_type`, `visibility`, `target`, `authority_basis`, and `authorized_interiority.scope_limit` should quarantine or require explicit repair unless the route context has exactly one legal value.
 
 ---
 
 ## 13. Quick Reference: Scene Loop
 
 ```
-1. Plot Agent     → injects scene pressure
+1. Plot Agent     → submits bounded ScenePressurePacket
 2. World Agent    → publishes current observations
 3. Character Agent → submits DialogueWindow
-4. World Agent    → resolves visible effects, updates state
-5. Orchestrator   → packs committed result into ScenePacket
-6. Narrator Agent → renders prose from committed material
+4. World Agent    → emits Resolution, StateDelta, and VisibilityResult
+5. Orchestrator   → seals committed result into ScenePacket and projected views
+6. Narrator Agent → renders prose from NarratorInputPacket
 ```
 
-> Narrator 只能从 committed ScenePacket 获取素材，不能从 raw DialogueWindow 直接渲染。
+> Narrator 只能从 committed material 的 `NarratorInputPacket` 获取素材，不能从 raw DialogueWindow、raw world_state_ledger、pending reveal candidate 直接渲染。
 
 ---
 
-*Last updated: 2026-04-14*
+*Last updated: 2026-04-27*

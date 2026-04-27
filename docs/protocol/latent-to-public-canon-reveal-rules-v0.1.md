@@ -34,7 +34,7 @@ Recommended flow:
 
 1. a hidden canon fact already exists in `latent_canon`
 2. a committed scene or institutional act creates a possible reveal path
-3. packet-level `canon_effects` record the reveal candidate
+3. packet-level `canon_reveal_candidates` record the reveal candidate
 4. `Canon Steward` evaluates whether the reveal path is legal and sufficiently stabilizing
 5. if approved, the fact is promoted from `latent_canon` to `public_canon`
 6. downstream scenes may now treat the revealed fact as open setting knowledge within the approved scope
@@ -43,6 +43,7 @@ Important rule:
 
 - exposure may happen inside a scene
 - promotion to `public_canon` happens only after explicit governance
+- `canon_reveal_candidates` are not the same as approved `CanonDelta` or committed canon effects
 
 ## Core Distinction
 
@@ -101,6 +102,21 @@ Suggested reveal input fields:
 | `promotion_request` | yes | whether public promotion is actually being requested |
 | `affected_public_refs` | optional | which public canon entries need update or creation |
 | `propagation_notes` | optional | which downstream layers or docs need synchronization |
+
+## Candidate vs Approved Canon Effect
+
+Two-phase naming should remain explicit:
+
+| Stage | Field or record | Meaning |
+| --- | --- | --- |
+| candidate | `canon_reveal_candidates` | committed material may legally expose hidden canon |
+| decision | `CanonDecision` | `Canon Steward` approves, rejects, or defers the reveal |
+| committed effect | `CanonDelta` or `canon_effects_committed` | approved canon update or approved reveal effect |
+
+Important rule:
+
+- a candidate may affect review workflow
+- it must not be treated as public canon, narrator fact, or character knowledge unless exposure scope separately permits it
 
 ## Reveal Gate Checklist
 
@@ -216,9 +232,10 @@ This document should be read together with:
 - `state-and-knowledge-layers-v0.1.md`
 - `canon-mutation-review-checklist-v0.1.md`
 - `scene-packet-schema-v0.1.md`
+- `resolution-state-delta-commit-pipeline-v0.1.md`
 
 Next protocol priority after this document:
 
-1. align reveal and promotion terms with the terminology index
-2. dialogue evaluation metrics
-3. prototype a minimal scene runner once protocol terminology stabilizes
+1. canon-vs-state classification checklist
+2. public scope registry and audience membership model
+3. adversarial trace fixtures for partial reveal and narrator leakage
