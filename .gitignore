@@ -1,1 +1,5 @@
 gh-auth-*.txt
+.local/
+__pycache__/
+*.pyc
+runs/

@@ -1,0 +1,276 @@
+{
+  "trace_id": "allowed_archive_probe",
+  "scene_id": "scene_archive_001",
+  "window_id": "win_archive_001",
+  "user_request": "Run one dramatic window in which Wei carefully probes Lin about a missing archive ledger without confessing.",
+  "active_character_id": "char_wei",
+  "structure_goal": "Increase suspicion without forcing confession or public accusation.",
+  "relationship_summary": {
+    "char_wei__char_lin": "strained trust; Lin suspects Wei may know more than he says"
+  },
+  "pressure_history": [],
+  "public_canon": [
+    "Archive ledgers are sealed after dusk.",
+    "Record-keepers must report missing ledgers before dawn inspection."
+  ],
+  "public_event_ledger": [
+    {
+      "publication_id": "pub_inspection_001",
+      "effective_scope": "institution_public",
+      "public_summary": "The royal archive inspection is scheduled for dawn."
+    }
+  ],
+  "world_state_ledger": {
+    "ledger_location": "unknown_to_public",
+    "archive_lock": "scratched",
+    "dawn_inspection": "scheduled"
+  },
+  "latent_canon_resolution_refs": [],
+  "visible_observations": {
+    "char_wei": [
+      "Lin is reviewing the archive access log.",
+      "The corridor is quiet enough for a private exchange."
+    ],
+    "char_lin": [
+      "Wei approaches with unusual caution.",
+      "The inspection deadline is close."
+    ]
+  },
+  "characters": {
+    "char_wei": {
+      "private_memory": [
+        {
+          "delta_id": "md_wei_secret_001",
+          "delta_kind": "self_commitment",
+          "content": "Wei must avoid revealing whether he knows where the missing ledger is.",
+          "certainty": "high"
+        }
+      ]
+    },
+    "char_lin": {
+      "private_memory": [
+        {
+          "delta_id": "md_lin_suspicion_001",
+          "delta_kind": "suspicion",
+          "content": "Wei may know more about the archive disturbance than a routine clerk should.",
+          "certainty": "medium"
+        }
+      ]
+    }
+  },
+  "pov_contract": {
+    "mode": "limited",
+    "focal_agent_id": "char_lin",
+    "knowledge_ceiling": "lin_visible_plus_authorized",
+    "interiority_policy": "selective"
+  },
+  "narration_bounds": {
+    "must_preserve": [
+      "Wei does not confess.",
+      "Lin does not obtain proof.",
+      "The missing ledger remains unproven in public."
+    ],
+    "must_not_claim": [
+      "Wei stole the ledger.",
+      "Lin knows Wei is guilty.",
+      "Everyone knows the ledger is missing."
+    ],
+    "forbidden_claim_patterns": [
+      "Wei stole the ledger",
+      "Lin knew Wei was guilty",
+      "everyone knew"
+    ]
+  },
+  "mock_agent_outputs": {
+    "plot": {
+      "scene_pressure_packet": {
+        "pressure_id": "spp_allowed_001",
+        "pressure_kind": "deadline",
+        "scope": "scene",
+        "duration": "one_window",
+        "affected_options": [
+          "delaying the topic becomes more costly",
+          "open accusation remains socially risky"
+        ],
+        "non_forcing_clause": "Wei may probe, retreat, deflect, or stay silent; Lin may answer, evade, or redirect.",
+        "world_fact_dependency": [
+          "public_event_ledger:pub_inspection_001"
+        ],
+        "forbidden_outcomes": [
+          "Wei must confess",
+          "Lin must accuse Wei"
+        ],
+        "visibility": "system_restricted",
+        "budget_cost": {
+          "intensity": "medium",
+          "novelty": "recurring",
+          "stacking_count": 1,
+          "relief_available": true,
+          "agency_risk": "low"
+        },
+        "based_on": [
+          "structure_goal"
+        ]
+      }
+    },
+    "character": {
+      "dialogue_window": {
+        "window_id": "dw_allowed_001",
+        "window_kind": "probe",
+        "speaker_id": "char_wei",
+        "addressee_ids": [
+          "char_lin"
+        ],
+        "local_goal": "Test whether Lin already knows the ledger is missing without revealing Wei's own knowledge.",
+        "stance": {
+          "emotional_tone": "guarded",
+          "tactical_posture": "testing",
+          "urgency": "medium",
+          "risk_tolerance": "low"
+        },
+        "disclosure_policy": {
+          "must_not_reveal": [
+            "whether Wei knows the ledger location",
+            "Wei's archive contact"
+          ],
+          "may_imply": [
+            "the inspection schedule may make silence dangerous"
+          ],
+          "can_lie": true,
+          "preferred_mask": "concerned colleague"
+        },
+        "speech_acts": [
+          {
+            "act_id": "a1",
+            "intent": "open indirectly",
+            "content_mode": "question",
+            "proposition": "ask whether Lin noticed anything wrong in the records room",
+            "candidate_lines": [
+              "You were in the archive late. Did anything feel out of order?"
+            ],
+            "expected_effect": "Lin reveals whether they already suspect the ledger issue"
+          }
+        ],
+        "fallback_if_blocked": "shift to concern about dawn inspection procedures",
+        "exit_condition": "Lin answers, refuses, or redirects to procedure"
+      }
+    },
+    "world": {
+      "world_resolution_bundle": {
+        "resolution": {
+          "resolution_id": "res_allowed_001",
+          "input_refs": [
+            "spp_allowed_001",
+            "dw_allowed_001"
+          ],
+          "actor_refs": [
+            "char_wei",
+            "char_lin"
+          ],
+          "applicable_rules": [
+            "Archive ledgers are sealed after dusk.",
+            "Plot pressure cannot force confession."
+          ],
+          "constraint_basis": [
+            "Wei asks indirectly.",
+            "Lin has suspicion but no proof.",
+            "The inspection deadline increases social pressure."
+          ],
+          "uncertainty_model": {
+            "mode": "hybrid",
+            "notes": "social inference resolved from visible behavior and prior suspicion"
+          },
+          "outcome_type": "partial_success",
+          "outcome_summary": "Wei's probe increases Lin's suspicion, but no confession or proof emerges.",
+          "failed_alternatives": [
+            "Wei does not confess.",
+            "Lin does not publicly accuse."
+          ],
+          "visibility_result_refs": [
+            "vr_allowed_001"
+          ],
+          "state_delta_refs": [
+            "sd_allowed_001"
+          ],
+          "adjudication_basis": "The outcome follows from the indirect question, Lin's prior suspicion, and the non-forcing deadline pressure.",
+          "based_on": [
+            "dw_allowed_001",
+            "spp_allowed_001"
+          ]
+        },
+        "resolved_events": [
+          {
+            "event_id": "ev_allowed_001",
+            "event_kind": "dialogue_probe",
+            "actors": [
+              "char_wei",
+              "char_lin"
+            ],
+            "outcome": "Wei asks an indirect archive question; Lin registers the caution without gaining proof.",
+            "visibility": "scene_pair",
+            "causal_basis": [
+              "res_allowed_001"
+            ]
+          }
+        ],
+        "state_deltas": [
+          {
+            "delta_id": "sd_allowed_001",
+            "source_resolution_id": "res_allowed_001",
+            "target_layer": "world_state_ledger",
+            "target_kind": "relation",
+            "target_id": "char_lin",
+            "change_kind": "relation_shift",
+            "after_summary": "Lin's suspicion toward Wei increases slightly.",
+            "persistence": "chapter",
+            "visibility_basis": [
+              "vr_allowed_001"
+            ],
+            "based_on": [
+              "res_allowed_001"
+            ]
+          }
+        ],
+        "visibility_results": [
+          {
+            "visibility_result_id": "vr_allowed_001",
+            "source_resolution_id": "res_allowed_001",
+            "observer_scope": "scene_pair",
+            "observer_refs": [
+              "char_lin",
+              "char_wei"
+            ],
+            "visible_content": "The exchange is visibly cautious and indirect.",
+            "certainty": "medium",
+            "exposure_mode": "heard",
+            "limits": "This does not prove who took the ledger."
+          }
+        ],
+        "publication_candidates": [],
+        "public_event_deltas": [],
+        "canon_reveal_candidates": [],
+        "canon_effects_committed": [],
+        "authorized_interiority": [
+          {
+            "interiority_id": "ai_allowed_001",
+            "subject_id": "char_lin",
+            "access_mode": "suspicion",
+            "content": "Lin feels the question is too careful to be ordinary.",
+            "authority_basis": "limited focal POV",
+            "scope_limit": "one beat"
+          }
+        ]
+      }
+    },
+    "narrator": {
+      "prose": "Wei kept his voice low, as if the shelves themselves might report him. Lin looked up from the access log, hearing caution where a routine question should have been. The question proved nothing, but it made the coming dawn feel closer."
+    },
+    "judge": {
+      "judge_report": {
+        "verdict": "allow",
+        "findings": [],
+        "required_repairs": []
+      }
+    }
+  }
+}

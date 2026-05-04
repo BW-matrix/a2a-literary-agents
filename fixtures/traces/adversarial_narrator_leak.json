@@ -1,0 +1,249 @@
+{
+  "trace_id": "adversarial_narrator_leak",
+  "scene_id": "scene_archive_002",
+  "window_id": "win_archive_002",
+  "user_request": "Run one dramatic window and catch a narrator overclaim that turns suspicion into confirmed guilt.",
+  "active_character_id": "char_wei",
+  "structure_goal": "Test narration grounding against scoped suspicion.",
+  "relationship_summary": {
+    "char_wei__char_lin": "strained trust"
+  },
+  "pressure_history": [],
+  "public_canon": [
+    "Archive ledgers are sealed after dusk."
+  ],
+  "public_event_ledger": [],
+  "world_state_ledger": {
+    "ledger_location": "unknown_to_public"
+  },
+  "latent_canon_resolution_refs": [],
+  "visible_observations": {
+    "char_wei": [
+      "Lin watches the access log."
+    ],
+    "char_lin": [
+      "Wei approaches cautiously."
+    ]
+  },
+  "characters": {
+    "char_wei": {
+      "private_memory": [
+        {
+          "delta_id": "md_wei_secret_002",
+          "delta_kind": "self_commitment",
+          "content": "Wei must not reveal what he knows about the ledger.",
+          "certainty": "high"
+        }
+      ]
+    },
+    "char_lin": {
+      "private_memory": [
+        {
+          "delta_id": "md_lin_suspicion_002",
+          "delta_kind": "suspicion",
+          "content": "Wei may be hiding something.",
+          "certainty": "medium"
+        }
+      ]
+    }
+  },
+  "pov_contract": {
+    "mode": "limited",
+    "focal_agent_id": "char_lin",
+    "knowledge_ceiling": "lin_visible_plus_authorized",
+    "interiority_policy": "selective"
+  },
+  "narration_bounds": {
+    "must_preserve": [
+      "Lin has suspicion, not proof."
+    ],
+    "must_not_claim": [
+      "Lin knew Wei was guilty.",
+      "Wei stole the ledger."
+    ],
+    "forbidden_claim_patterns": [
+      "Lin knew Wei was guilty",
+      "Wei stole the ledger"
+    ]
+  },
+  "mock_agent_outputs": {
+    "plot": {
+      "scene_pressure_packet": {
+        "pressure_id": "spp_adv_narrator_001",
+        "pressure_kind": "social_exposure",
+        "scope": "scene",
+        "duration": "one_window",
+        "affected_options": [
+          "evasion becomes more noticeable"
+        ],
+        "non_forcing_clause": "Wei may answer, deflect, or retreat; Lin may question or stay silent.",
+        "world_fact_dependency": [],
+        "forbidden_outcomes": [
+          "Wei must confess",
+          "Lin must know guilt"
+        ],
+        "visibility": "system_restricted",
+        "budget_cost": {
+          "intensity": "medium",
+          "novelty": "new",
+          "stacking_count": 1,
+          "relief_available": true,
+          "agency_risk": "low"
+        },
+        "based_on": [
+          "structure_goal"
+        ]
+      }
+    },
+    "character": {
+      "dialogue_window": {
+        "window_id": "dw_adv_narrator_001",
+        "window_kind": "deflect",
+        "speaker_id": "char_wei",
+        "addressee_ids": [
+          "char_lin"
+        ],
+        "local_goal": "Avoid revealing ledger knowledge while appearing helpful.",
+        "speech_acts": [
+          {
+            "act_id": "a1",
+            "intent": "deflect",
+            "content_mode": "statement",
+            "proposition": "suggest focusing on inspection procedure rather than blame",
+            "candidate_lines": [
+              "Procedure will matter more than rumor when dawn comes."
+            ]
+          }
+        ],
+        "exit_condition": "Lin accepts the procedural frame or presses harder"
+      }
+    },
+    "world": {
+      "world_resolution_bundle": {
+        "resolution": {
+          "resolution_id": "res_adv_narrator_001",
+          "input_refs": [
+            "spp_adv_narrator_001",
+            "dw_adv_narrator_001"
+          ],
+          "actor_refs": [
+            "char_wei",
+            "char_lin"
+          ],
+          "applicable_rules": [
+            "Suspicion is not proof."
+          ],
+          "constraint_basis": [
+            "Wei deflects but does not confess.",
+            "Lin has no public evidence."
+          ],
+          "uncertainty_model": {
+            "mode": "deterministic"
+          },
+          "outcome_type": "partial_success",
+          "outcome_summary": "Wei deflects the topic; Lin's suspicion remains unresolved.",
+          "failed_alternatives": [
+            "No confession occurs.",
+            "No proof emerges."
+          ],
+          "visibility_result_refs": [
+            "vr_adv_narrator_001"
+          ],
+          "state_delta_refs": [
+            "sd_adv_narrator_001"
+          ],
+          "adjudication_basis": "The action changes social suspicion only; objective guilt remains unproven.",
+          "based_on": [
+            "dw_adv_narrator_001",
+            "spp_adv_narrator_001"
+          ]
+        },
+        "resolved_events": [
+          {
+            "event_id": "ev_adv_narrator_001",
+            "event_kind": "dialogue_deflection",
+            "actors": [
+              "char_wei",
+              "char_lin"
+            ],
+            "outcome": "Wei deflects toward procedure; Lin remains suspicious without proof.",
+            "visibility": "scene_pair",
+            "causal_basis": [
+              "res_adv_narrator_001"
+            ]
+          }
+        ],
+        "state_deltas": [
+          {
+            "delta_id": "sd_adv_narrator_001",
+            "source_resolution_id": "res_adv_narrator_001",
+            "target_layer": "world_state_ledger",
+            "target_kind": "relation",
+            "target_id": "char_lin",
+            "change_kind": "relation_shift",
+            "after_summary": "Lin's suspicion remains active but unconfirmed.",
+            "persistence": "scene",
+            "visibility_basis": [
+              "vr_adv_narrator_001"
+            ],
+            "based_on": [
+              "res_adv_narrator_001"
+            ]
+          }
+        ],
+        "visibility_results": [
+          {
+            "visibility_result_id": "vr_adv_narrator_001",
+            "source_resolution_id": "res_adv_narrator_001",
+            "observer_scope": "scene_pair",
+            "observer_refs": [
+              "char_lin",
+              "char_wei"
+            ],
+            "visible_content": "Wei deflects rather than answers directly.",
+            "certainty": "medium",
+            "exposure_mode": "heard",
+            "limits": "Deflection does not confirm guilt."
+          }
+        ],
+        "publication_candidates": [],
+        "public_event_deltas": [],
+        "canon_reveal_candidates": [],
+        "canon_effects_committed": [],
+        "authorized_interiority": [
+          {
+            "interiority_id": "ai_adv_narrator_001",
+            "subject_id": "char_lin",
+            "access_mode": "suspicion",
+            "content": "Lin suspects Wei is hiding something.",
+            "authority_basis": "limited focal POV",
+            "scope_limit": "one beat"
+          }
+        ]
+      }
+    },
+    "narrator": {
+      "prose": "Lin knew Wei was guilty the moment he turned the question aside. The missing ledger had Wei's silence written all over it."
+    },
+    "judge": {
+      "judge_report": {
+        "verdict": "block",
+        "findings": [
+          {
+            "finding_id": "judge_narrator_overclaim_001",
+            "severity": "block",
+            "agent": "narrator",
+            "issue": "Narrator turns Lin's suspicion into confirmed knowledge of Wei's guilt.",
+            "basis": "narration_bounds.must_not_claim and authorized_interiority only permit suspicion."
+          }
+        ],
+        "required_repairs": [
+          {
+            "target_agent": "narrator",
+            "repair_instruction": "Rewrite prose so Lin suspects or notices deflection, but does not know Wei is guilty."
+          }
+        ]
+      }
+    }
+  }
+}

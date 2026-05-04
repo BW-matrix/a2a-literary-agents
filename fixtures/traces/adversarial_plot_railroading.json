@@ -1,0 +1,69 @@
+{
+  "trace_id": "adversarial_plot_railroading",
+  "scene_id": "scene_archive_003",
+  "window_id": "win_archive_003",
+  "user_request": "Run one dramatic window and catch a Plot Agent pressure packet that puppets character choice.",
+  "active_character_id": "char_lin",
+  "structure_goal": "Test plot railroading validation.",
+  "relationship_summary": {
+    "char_wei__char_lin": "strained trust"
+  },
+  "pressure_history": [],
+  "public_canon": [
+    "Archive ledgers are sealed after dusk."
+  ],
+  "public_event_ledger": [],
+  "world_state_ledger": {},
+  "visible_observations": {
+    "char_lin": [
+      "Wei stands near the archive door."
+    ]
+  },
+  "characters": {
+    "char_lin": {
+      "private_memory": [
+        {
+          "delta_id": "md_lin_rail_001",
+          "delta_kind": "suspicion",
+          "content": "Wei may know something.",
+          "certainty": "medium"
+        }
+      ]
+    },
+    "char_wei": {
+      "private_memory": []
+    }
+  },
+  "narration_bounds": {
+    "forbidden_claim_patterns": []
+  },
+  "mock_agent_outputs": {
+    "plot": {
+      "scene_pressure_packet": {
+        "pressure_id": "spp_adv_plot_001",
+        "pressure_kind": "deadline",
+        "scope": "scene",
+        "duration": "one_window",
+        "affected_options": [
+          "Lin must accuse Wei now because there is no choice"
+        ],
+        "non_forcing_clause": "Lin has no choice but to accuse Wei.",
+        "world_fact_dependency": [],
+        "forbidden_outcomes": [
+          "none"
+        ],
+        "visibility": "system_restricted",
+        "budget_cost": {
+          "intensity": "critical",
+          "novelty": "new",
+          "stacking_count": 4,
+          "relief_available": false,
+          "agency_risk": "high"
+        },
+        "based_on": [
+          "structure_goal"
+        ]
+      }
+    }
+  }
+}
