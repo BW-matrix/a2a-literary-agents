@@ -132,7 +132,7 @@ class TraceRunnerTests(unittest.TestCase):
 
             class Completed:
                 returncode = 0
-                stdout = ""
+                stdout = '{"type":"turn.completed","usage":{"input_tokens":42,"cached_input_tokens":7,"output_tokens":11,"reasoning_output_tokens":0}}\n'
                 stderr = ""
 
             return Completed()
@@ -143,12 +143,14 @@ class TraceRunnerTests(unittest.TestCase):
         self.assertIsNone(result.error)
         self.assertEqual(result.parsed_output, {"agent": "plot", "ok": True})
         self.assertEqual(result.token_usage["mode"], "codex-cli")
-        self.assertEqual(result.token_usage["source"], "estimated_local")
-        self.assertGreater(result.token_usage["input_tokens"], 0)
-        self.assertGreater(result.token_usage["output_tokens"], 0)
+        self.assertEqual(result.token_usage["source"], "provider_usage")
+        self.assertFalse(result.token_usage["is_estimated"])
+        self.assertEqual(result.token_usage["input_tokens"], 42)
+        self.assertEqual(result.token_usage["output_tokens"], 11)
         self.assertEqual(captured["env"]["CODEX_HOME"], codex_home)
         self.assertEqual(captured["cwd"], codex_workdir)
         self.assertIn("--ephemeral", captured["command"])
+        self.assertIn("--json", captured["command"])
         self.assertIn("--ignore-user-config", captured["command"])
         self.assertIn("--ignore-rules", captured["command"])
         self.assertIn("--skip-git-repo-check", captured["command"])

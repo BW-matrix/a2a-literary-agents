@@ -194,6 +194,7 @@ class CodexCliAgentProvider(AgentProvider):
                 "--skip-git-repo-check",
                 "--cd",
                 self.config.codex_workdir,
+                "--json",
                 "--output-last-message",
                 output_path,
                 "--color",
@@ -224,6 +225,7 @@ class CodexCliAgentProvider(AgentProvider):
                 return AgentCompletion(agent_name, "codex-cli", prompt, "", None, f"codex_cli_error: {exc}")
 
             raw = _read_text_if_exists(output_path) or completed.stdout.strip()
+            provider_usage = _usage_from_codex_jsonl(completed.stdout)
             token_usage = build_token_usage(
                 agent_name=agent_name,
                 mode="codex-cli",
@@ -231,6 +233,7 @@ class CodexCliAgentProvider(AgentProvider):
                 input_text=provider_prompt,
                 output_text=raw,
                 max_output_tokens=self.config.max_tokens_for(agent_name),
+                provider_usage=provider_usage,
                 input_text_basis="codex_cli_stdin",
             )
             if completed.returncode != 0:
@@ -313,3 +316,20 @@ def _read_text_if_exists(path: str) -> str:
             return f.read().strip()
     except OSError:
         return ""
+
+
+def _usage_from_codex_jsonl(stdout: str) -> dict[str, Any] | None:
+    """Extract token usage from `codex exec --json` event streams."""
+
+    usage: dict[str, Any] | None = None
+    for line in stdout.splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if event.get("type") == "turn.completed" and isinstance(event.get("usage"), dict):
+            usage = event["usage"]
+    return usage

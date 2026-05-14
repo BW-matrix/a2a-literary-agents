@@ -96,7 +96,7 @@ $env:A2A_LLM_MODEL="gpt-5.5"
 python scripts/run_trace.py run --fixture fixtures/traces/allowed_archive_probe.json --llm-mode codex-cli
 ```
 
-Codex CLI output budgets are soft prompt budgets, not hard API token caps. The runner records local estimated usage for Codex CLI calls, but it cannot guarantee exact provider-side billing counts from the CLI process. The runner still enforces `A2A_MAX_LLM_CALLS_PER_TRACE` and deterministic protocol validators.
+Codex CLI output budgets are soft prompt budgets, not hard API token caps. The runner reads `turn.completed.usage` from `codex exec --json` when the CLI exposes it, and falls back to local estimates only when usage events are unavailable. The runner still enforces `A2A_MAX_LLM_CALLS_PER_TRACE` and deterministic protocol validators.
 
 ## Real API Configuration
 
@@ -180,7 +180,7 @@ Usage sources:
 
 | Source | Meaning |
 | --- | --- |
-| `provider_usage` | Exact usage returned by an OpenAI-compatible backend |
+| `provider_usage` | Exact usage returned by an OpenAI-compatible backend or Codex CLI JSON event |
 | `estimated_local` | Local deterministic estimate used when the backend does not expose usage |
 
 The current estimator is `cjk_aware_char_estimator_v0.1`: CJK characters count roughly as one token each, while non-CJK text is approximated at four characters per token. This is telemetry for budget awareness, not a billing-grade tokenizer.
@@ -247,5 +247,5 @@ python -m unittest discover -s tests
 - Validators are intentionally minimal.
 - Real API mode assumes an OpenAI-compatible `/chat/completions` endpoint.
 - Codex CLI mode is process-based and slower than direct API mode.
-- Token usage is recorded per agent. Direct API providers use returned provider usage when available; Codex CLI currently records local estimates.
+- Token usage is recorded per agent. Direct API and Codex CLI JSON events use returned provider usage when available; otherwise the runner records local estimates.
 - `Orchestrator Projection, Assembly, and Sealing Contract v0.1` should be formalized next.

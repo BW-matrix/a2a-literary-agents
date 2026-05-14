@@ -113,7 +113,7 @@ python scripts/run_trace.py run --fixture fixtures/traces/allowed_archive_probe.
 - Judge output is advisory-to-Orchestrator, but MVP currently converts `repair_required` and `block` into hard blocks.
 - Validators are intentionally minimal.
 - Codex CLI mode is slower than direct API mode because each agent call is a separate headless process.
-- Token usage is recorded per agent. Direct API providers use returned provider usage when available; Codex CLI currently records local estimates.
+- Token usage is recorded per agent. Direct API and Codex CLI JSON events use returned provider usage when available; otherwise the runner records local estimates.
 
 ## License
 
