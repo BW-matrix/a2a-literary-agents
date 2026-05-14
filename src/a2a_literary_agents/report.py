@@ -16,6 +16,15 @@ def write_report(path: str, trace: dict[str, Any]) -> None:
     lines.append(f"- Model: `{trace.get('model')}`")
     lines.append("")
 
+    token_usage = trace.get("token_usage", {})
+    if token_usage:
+        lines.append("## Token Usage")
+        lines.append("")
+        lines.append("```json")
+        lines.append(stable_json(token_usage))
+        lines.append("```")
+        lines.append("")
+
     lines.append("## Projection Manifests")
     lines.append("")
     for manifest in trace.get("projection_manifests", []):

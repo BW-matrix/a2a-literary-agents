@@ -16,6 +16,7 @@ if SRC not in sys.path:
 from a2a_literary_agents.config import RunnerConfig
 from a2a_literary_agents.llm import CodexCliAgentProvider
 from a2a_literary_agents.runner import run_trace
+from a2a_literary_agents.token_usage import estimate_tokens
 from a2a_literary_agents.validation import validate_plot
 
 
@@ -47,8 +48,15 @@ class TraceRunnerTests(unittest.TestCase):
         self.assertIn("scene_packet", trace)
         self.assertEqual(trace["judge_report"]["verdict"], "allow")
         self.assertIn("memory_handoff", trace)
+        self.assertIn("token_usage", trace)
+        self.assertEqual(trace["token_usage"]["totals"]["agent_count"], 5)
+        self.assertGreater(trace["token_usage"]["totals"]["total_tokens"], 0)
+        self.assertTrue(trace["token_usage"]["totals"]["estimated_agent_count"] >= 5)
+        self.assertIn("token_usage", trace["agent_runs"][0])
         self.assertTrue(os.path.exists(trace["artifacts"]["trace_json"]))
         self.assertTrue(os.path.exists(trace["artifacts"]["report_md"]))
+        with open(trace["artifacts"]["report_md"], "r", encoding="utf-8") as f:
+            self.assertIn("## Token Usage", f.read())
 
     def test_warning_does_not_stop_pipeline(self) -> None:
         with open(self.fixture("allowed_archive_probe.json"), "r", encoding="utf-8") as f:
@@ -134,6 +142,10 @@ class TraceRunnerTests(unittest.TestCase):
 
         self.assertIsNone(result.error)
         self.assertEqual(result.parsed_output, {"agent": "plot", "ok": True})
+        self.assertEqual(result.token_usage["mode"], "codex-cli")
+        self.assertEqual(result.token_usage["source"], "estimated_local")
+        self.assertGreater(result.token_usage["input_tokens"], 0)
+        self.assertGreater(result.token_usage["output_tokens"], 0)
         self.assertEqual(captured["env"]["CODEX_HOME"], codex_home)
         self.assertEqual(captured["cwd"], codex_workdir)
         self.assertIn("--ephemeral", captured["command"])
@@ -159,6 +171,10 @@ class TraceRunnerTests(unittest.TestCase):
 
         self.assertTrue(any(item["code"] == "invalid_budget_cost" for item in violations))
         self.assertFalse(any(item["severity"] == "block" for item in violations))
+
+    def test_token_estimator_counts_cjk_text_more_conservatively(self) -> None:
+        self.assertGreaterEqual(estimate_tokens("中文中文"), 4)
+        self.assertGreater(estimate_tokens("Return exactly one JSON object."), 0)
 
 
 if __name__ == "__main__":

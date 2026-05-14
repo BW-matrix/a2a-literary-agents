@@ -20,6 +20,7 @@ from .projection import (
 )
 from .prompts import build_prompt
 from .report import write_report
+from .token_usage import summarize_token_usage
 from .validation import has_block, final_decision, validate_dialogue, validate_judge, validate_narration, validate_plot, validate_world
 
 
@@ -38,6 +39,14 @@ def run_trace(fixture_path: str, out_dir: str, config: RunnerConfig) -> dict[str
         "model": config.model,
         "agent_runs": [],
         "projection_manifests": [],
+        "token_usage": {
+            "budget": {
+                "total_output_token_budget": config.total_output_token_budget,
+                "per_agent_max_output_tokens": config.per_agent_max_output_tokens,
+            },
+            "agents": [],
+            "totals": {},
+        },
         "validation": {},
         "artifacts": {},
     }
@@ -110,8 +119,11 @@ def _call_agent(
         "raw_output": completion.raw_output,
         "parsed_output": completion.parsed_output,
         "error": completion.error,
+        "token_usage": completion.token_usage,
     }
     trace["agent_runs"].append(record)
+    if completion.token_usage:
+        trace["token_usage"]["agents"].append(completion.token_usage)
     return completion.parsed_output
 
 
@@ -199,6 +211,7 @@ def _derive_memory_handoff(fixture: dict[str, Any], scene_packet: dict[str, Any]
 
 def _finish_trace(trace: dict[str, Any], run_dir: str) -> dict[str, Any]:
     trace["final_decision"] = final_decision(trace["validation"])
+    summarize_token_usage(trace)
     trace_path = os.path.join(run_dir, "trace.json")
     report_path = os.path.join(run_dir, "report.md")
     write_json_file(trace_path, trace)

@@ -18,6 +18,7 @@ from typing import Any
 
 from .config import RunnerConfig
 from .json_util import parse_json_object
+from .token_usage import build_token_usage
 
 
 @dataclass
@@ -28,6 +29,7 @@ class AgentCompletion:
     raw_output: str
     parsed_output: dict[str, Any] | None
     error: str | None = None
+    token_usage: dict[str, Any] | None = None
 
 
 class AgentProvider:
@@ -36,6 +38,9 @@ class AgentProvider:
 
 
 class MockAgentProvider(AgentProvider):
+    def __init__(self, config: RunnerConfig | None = None):
+        self.config = config or RunnerConfig(llm_mode="mock", model="mock")
+
     def complete(self, agent_name: str, prompt: str, fixture: dict[str, Any]) -> AgentCompletion:
         output = fixture.get("mock_agent_outputs", {}).get(agent_name)
         if output is None:
@@ -51,6 +56,15 @@ class MockAgentProvider(AgentProvider):
             prompt=prompt,
             raw_output=raw,
             parsed_output=output,
+            token_usage=build_token_usage(
+                agent_name=agent_name,
+                mode="mock",
+                model=self.config.model,
+                input_text=prompt,
+                output_text=raw,
+                max_output_tokens=self.config.max_tokens_for(agent_name),
+                input_text_basis="runner_prompt",
+            ),
         )
 
 
@@ -80,22 +94,24 @@ class OpenAICompatibleAgentProvider(AgentProvider):
             )
 
         self.calls_made += 1
+        system_prompt = (
+            "You are one bounded model-agent inside the a2a-literary-agents protocol. "
+            "Use only the projected context in the user message. Return valid JSON only. "
+            "Do not invent hidden facts, broaden visibility, or bypass authority boundaries."
+        )
         payload: dict[str, Any] = {
             "model": self.config.model,
             "messages": [
                 {
                     "role": "system",
-                    "content": (
-                        "You are one bounded model-agent inside the a2a-literary-agents protocol. "
-                        "Use only the projected context in the user message. Return valid JSON only. "
-                        "Do not invent hidden facts, broaden visibility, or bypass authority boundaries."
-                    ),
+                    "content": system_prompt,
                 },
                 {"role": "user", "content": prompt},
             ],
             "temperature": self.config.temperature,
         }
         payload[self.config.token_field] = self.config.max_tokens_for(agent_name)
+        request_text = json.dumps(payload["messages"], ensure_ascii=False, sort_keys=True)
 
         request = urllib.request.Request(
             url=f"{self.config.base_url.rstrip('/')}/chat/completions",
@@ -125,6 +141,16 @@ class OpenAICompatibleAgentProvider(AgentProvider):
             raw_output=raw,
             parsed_output=parsed,
             error=parse_error,
+            token_usage=build_token_usage(
+                agent_name=agent_name,
+                mode="real",
+                model=self.config.model,
+                input_text=request_text,
+                output_text=raw,
+                max_output_tokens=self.config.max_tokens_for(agent_name),
+                provider_usage=body.get("usage"),
+                input_text_basis="chat_messages",
+            ),
         )
 
 
@@ -176,10 +202,11 @@ class CodexCliAgentProvider(AgentProvider):
             ]
             env = _isolated_codex_env(self.config.codex_home)
 
+            provider_prompt = _codex_cli_prompt(agent_name, prompt, self.config.max_tokens_for(agent_name))
             try:
                 completed = subprocess.run(
                     command,
-                    input=_codex_cli_prompt(agent_name, prompt, self.config.max_tokens_for(agent_name)),
+                    input=provider_prompt,
                     text=True,
                     encoding="utf-8",
                     errors="replace",
@@ -197,9 +224,18 @@ class CodexCliAgentProvider(AgentProvider):
                 return AgentCompletion(agent_name, "codex-cli", prompt, "", None, f"codex_cli_error: {exc}")
 
             raw = _read_text_if_exists(output_path) or completed.stdout.strip()
+            token_usage = build_token_usage(
+                agent_name=agent_name,
+                mode="codex-cli",
+                model=self.config.model,
+                input_text=provider_prompt,
+                output_text=raw,
+                max_output_tokens=self.config.max_tokens_for(agent_name),
+                input_text_basis="codex_cli_stdin",
+            )
             if completed.returncode != 0:
                 detail = completed.stderr.strip() or completed.stdout.strip() or f"exit_code={completed.returncode}"
-                return AgentCompletion(agent_name, "codex-cli", prompt, raw, None, f"codex_cli_failed: {detail}")
+                return AgentCompletion(agent_name, "codex-cli", prompt, raw, None, f"codex_cli_failed: {detail}", token_usage)
 
             parsed, parse_error = parse_json_object(raw)
             if parsed and isinstance(parsed.get("payload"), dict):
@@ -211,13 +247,14 @@ class CodexCliAgentProvider(AgentProvider):
                 raw_output=raw,
                 parsed_output=parsed,
                 error=parse_error,
+                token_usage=token_usage,
             )
 
 
 class AutoAgentProvider(AgentProvider):
     def __init__(self, config: RunnerConfig):
         self.real = OpenAICompatibleAgentProvider(config)
-        self.mock = MockAgentProvider()
+        self.mock = MockAgentProvider(config)
         self.has_key = bool(config.api_key)
 
     def complete(self, agent_name: str, prompt: str, fixture: dict[str, Any]) -> AgentCompletion:
@@ -228,13 +265,15 @@ class AutoAgentProvider(AgentProvider):
             fallback = self.mock.complete(agent_name, prompt, fixture)
             fallback.mode = "mock_fallback"
             fallback.error = f"real_failed: {result.error}"
+            if fallback.token_usage:
+                fallback.token_usage["mode"] = "mock_fallback"
             return fallback
         return result
 
 
 def build_provider(config: RunnerConfig) -> AgentProvider:
     if config.llm_mode == "mock":
-        return MockAgentProvider()
+        return MockAgentProvider(config)
     if config.llm_mode == "codex-cli":
         return CodexCliAgentProvider(config)
     if config.llm_mode == "real":

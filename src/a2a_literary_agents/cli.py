@@ -24,6 +24,11 @@ def main(argv: list[str] | None = None) -> int:
         trace = run_trace(args.fixture, args.out, config)
         print(f"trace_id={trace['trace_id']}")
         print(f"final_decision={trace['final_decision']}")
+        totals = trace.get("token_usage", {}).get("totals", {})
+        if totals:
+            print(f"token_total={totals.get('total_tokens')}")
+            print(f"token_input={totals.get('input_tokens')}")
+            print(f"token_output={totals.get('output_tokens')}")
         print(f"trace_json={trace['artifacts']['trace_json']}")
         print(f"report_md={trace['artifacts']['report_md']}")
         return 0 if trace["final_decision"] == "allowed" else 2

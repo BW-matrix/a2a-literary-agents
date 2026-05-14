@@ -96,7 +96,7 @@ $env:A2A_LLM_MODEL="gpt-5.5"
 python scripts/run_trace.py run --fixture fixtures/traces/allowed_archive_probe.json --llm-mode codex-cli
 ```
 
-Codex CLI output budgets are soft prompt budgets, not hard API token caps. The runner still enforces `A2A_MAX_LLM_CALLS_PER_TRACE` and deterministic protocol validators.
+Codex CLI output budgets are soft prompt budgets, not hard API token caps. The runner records local estimated usage for Codex CLI calls, but it cannot guarantee exact provider-side billing counts from the CLI process. The runner still enforces `A2A_MAX_LLM_CALLS_PER_TRACE` and deterministic protocol validators.
 
 ## Real API Configuration
 
@@ -152,10 +152,38 @@ High-context default output caps:
     "world": 5000,
     "narrator": 6000,
     "canon_steward": 3000,
-    "validator": 3000
+    "judge": 3000
   }
 }
 ```
+
+## Token Usage Accounting
+
+Every agent call writes a `token_usage` record into both `trace.json` and `report.md`.
+
+```json
+{
+  "agent_name": "world",
+  "mode": "codex-cli",
+  "model": "gpt-5.5",
+  "source": "estimated_local",
+  "is_estimated": true,
+  "input_tokens": 1200,
+  "output_tokens": 800,
+  "total_tokens": 2000,
+  "max_output_tokens": 5000,
+  "output_budget_remaining": 4200
+}
+```
+
+Usage sources:
+
+| Source | Meaning |
+| --- | --- |
+| `provider_usage` | Exact usage returned by an OpenAI-compatible backend |
+| `estimated_local` | Local deterministic estimate used when the backend does not expose usage |
+
+The current estimator is `cjk_aware_char_estimator_v0.1`: CJK characters count roughly as one token each, while non-CJK text is approximated at four characters per token. This is telemetry for budget awareness, not a billing-grade tokenizer.
 
 ## Fixtures
 
@@ -176,6 +204,7 @@ Each run writes:
 
 The report includes:
 
+- token usage by agent and total
 - projection manifests
 - every agent's projected input context
 - every agent's raw output
@@ -218,5 +247,5 @@ python -m unittest discover -s tests
 - Validators are intentionally minimal.
 - Real API mode assumes an OpenAI-compatible `/chat/completions` endpoint.
 - Codex CLI mode is process-based and slower than direct API mode.
-- Token counting is configured as budget metadata, but exact tokenizer accounting is not yet implemented.
+- Token usage is recorded per agent. Direct API providers use returned provider usage when available; Codex CLI currently records local estimates.
 - `Orchestrator Projection, Assembly, and Sealing Contract v0.1` should be formalized next.

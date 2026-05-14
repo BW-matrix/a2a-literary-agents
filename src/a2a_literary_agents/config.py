@@ -14,7 +14,7 @@ DEFAULT_AGENT_OUTPUT_TOKENS = {
     "world": 5000,
     "narrator": 6000,
     "canon_steward": 3000,
-    "validator": 3000,
+    "judge": 3000,
 }
 
 
