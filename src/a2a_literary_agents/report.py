@@ -14,6 +14,8 @@ def write_report(path: str, trace: dict[str, Any]) -> None:
     lines.append(f"- Final decision: `{trace.get('final_decision', 'unknown')}`")
     lines.append(f"- LLM mode: `{trace.get('llm_mode')}`")
     lines.append(f"- Model: `{trace.get('model')}`")
+    if trace.get("run_id"):
+        lines.append(f"- Run ID: `{trace.get('run_id')}`")
     lines.append("")
 
     token_usage = trace.get("token_usage", {})
@@ -22,6 +24,14 @@ def write_report(path: str, trace: dict[str, Any]) -> None:
         lines.append("")
         lines.append("```json")
         lines.append(stable_json(token_usage))
+        lines.append("```")
+        lines.append("")
+
+    if trace.get("interface_normalization"):
+        lines.append("## Interface Normalization")
+        lines.append("")
+        lines.append("```json")
+        lines.append(stable_json(trace.get("interface_normalization", [])))
         lines.append("```")
         lines.append("")
 

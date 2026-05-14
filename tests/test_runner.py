@@ -68,7 +68,81 @@ class TraceRunnerTests(unittest.TestCase):
 
         self.assertEqual(trace["final_decision"], "allowed")
         self.assertEqual([run["agent_name"] for run in trace["agent_runs"]], ["plot", "character", "world", "narrator", "judge"])
-        self.assertTrue(any(item["severity"] == "warning" for item in trace["validation"]["plot"]))
+        self.assertFalse(trace["validation"]["plot"])
+        self.assertTrue(any(item["code"] == "normalized_string_budget_cost" for item in trace["interface_normalization"]))
+
+    def test_world_alias_interfaces_feed_memory_handoff(self) -> None:
+        with open(self.fixture("allowed_archive_probe.json"), "r", encoding="utf-8") as f:
+            fixture = json.load(f)
+        fixture["trace_id"] = "allowed_world_aliases"
+        bundle = fixture["mock_agent_outputs"]["world"]["world_resolution_bundle"]
+        bundle["resolved_events"] = [
+            {
+                "event_id": "ev_alias_001",
+                "event_type": "private_procedural_probe",
+                "participants": ["char_wei", "char_lin"],
+                "summary": "Wei asks Lin a careful private procedural question.",
+                "visibility": "scene_pair",
+            }
+        ]
+        bundle["state_deltas"] = [
+            {
+                "state_delta_id": "sd_alias_001",
+                "target_ref": "char_lin",
+                "change_type": "add",
+                "after": "Lin may privately read Wei as suspicious.",
+            }
+        ]
+        bundle["visibility_results"] = [
+            {
+                "visibility_id": "vis_alias_001",
+                "audience": ["char_wei", "char_lin"],
+                "scope": "private_character_facing",
+                "summary": "Wei and Lin witnessed the private procedural exchange.",
+            }
+        ]
+        bundle["authorized_interiority"] = [
+            {
+                "character_id": "char_lin",
+                "authorized_contents": ["Lin may interpret Wei's restraint as suspicious."],
+                "scope_limit": "one_window",
+            }
+        ]
+
+        trace = self.run_temp_fixture(fixture)
+
+        self.assertEqual(trace["final_decision"], "allowed")
+        self.assertFalse(trace["validation"]["world"])
+        codes = {item["code"] for item in trace["interface_normalization"]}
+        self.assertIn("audience_alias", codes)
+        self.assertIn("scope_alias", codes)
+        self.assertIn("character_id_alias", codes)
+        self.assertIn("state_delta_id_alias", codes)
+        self.assertIn("target_ref_alias", codes)
+        self.assertTrue(trace["memory_handoff"]["derived_memory_deltas"])
+        lin_projection = next(item for item in trace["memory_handoff"]["owner_projections"] if item["owner_agent_id"] == "char_lin")
+        self.assertIn("vis_alias_001", lin_projection["owner_visibility"])
+
+    def test_missing_interiority_scope_limit_blocks(self) -> None:
+        with open(self.fixture("allowed_archive_probe.json"), "r", encoding="utf-8") as f:
+            fixture = json.load(f)
+        fixture["trace_id"] = "missing_scope_limit"
+        for item in fixture["mock_agent_outputs"]["world"]["world_resolution_bundle"]["authorized_interiority"]:
+            item.pop("scope_limit", None)
+
+        trace = self.run_temp_fixture(fixture)
+
+        self.assertEqual(trace["final_decision"], "blocked")
+        self.assertEqual([run["agent_name"] for run in trace["agent_runs"]], ["plot", "character", "world"])
+        self.assertTrue(any(item["code"] == "missing_interiority_field" for item in trace["validation"]["world"]))
+
+    def test_repeated_runs_do_not_overwrite_previous_trace(self) -> None:
+        first = self.run_fixture("allowed_archive_probe.json")
+        second = self.run_fixture("allowed_archive_probe.json")
+
+        self.assertNotEqual(first["artifacts"]["trace_json"], second["artifacts"]["trace_json"])
+        self.assertTrue(os.path.exists(first["artifacts"]["trace_json"]))
+        self.assertTrue(os.path.exists(second["artifacts"]["trace_json"]))
 
     def test_narrator_leak_is_blocked_after_full_pipeline(self) -> None:
         trace = self.run_fixture("adversarial_narrator_leak.json")

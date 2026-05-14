@@ -84,6 +84,7 @@ python scripts/run_trace.py run --fixture fixtures/traces/allowed_archive_probe.
 
 - `src/a2a_literary_agents/runner.py`: single-window protocol runner
 - `src/a2a_literary_agents/projection.py`: projected context construction
+- `src/a2a_literary_agents/interface.py`: schema alias normalization before validation and sealing
 - `src/a2a_literary_agents/llm.py`: mock, OpenAI-compatible, and Codex CLI providers
 - `src/a2a_literary_agents/validation.py`: deterministic validators and Judge verdict handling
 - `fixtures/traces/`: allowed and adversarial trace fixtures
@@ -97,6 +98,7 @@ python scripts/run_trace.py run --fixture fixtures/traces/allowed_archive_probe.
 - No repair loop yet.
 - Judge can request repair, but MVP currently converts that into a block.
 - Validators are intentionally minimal.
+- Interface normalization handles known model-output aliases before validation, but canonical schemas should still be strengthened.
 - Codex CLI mode is slower than direct API mode.
 - Token usage is recorded per agent. Direct API and Codex CLI JSON events use returned provider usage when available; otherwise the runner records local estimates.
 

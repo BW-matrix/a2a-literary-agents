@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from typing import Any
 
 from .config import RunnerConfig
+from .interface import normalize_dialogue_window, normalize_plot_packet, normalize_world_bundle
 from .json_util import load_json_file, write_json_file
 from .llm import AgentProvider, build_provider
 from .projection import (
@@ -28,13 +29,16 @@ def run_trace(fixture_path: str, out_dir: str, config: RunnerConfig) -> dict[str
     fixture = load_json_file(fixture_path)
     provider = build_provider(config)
     trace_id = fixture["trace_id"]
-    run_dir = os.path.join(out_dir, trace_id)
+    created_at = datetime.now(timezone.utc).isoformat()
+    run_id = _run_id(created_at)
+    run_dir = os.path.join(out_dir, trace_id, run_id)
     os.makedirs(run_dir, exist_ok=True)
 
     trace: dict[str, Any] = {
         "trace_id": trace_id,
+        "run_id": run_id,
         "fixture_path": fixture_path,
-        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_at": created_at,
         "llm_mode": config.llm_mode,
         "model": config.model,
         "agent_runs": [],
@@ -47,6 +51,7 @@ def run_trace(fixture_path: str, out_dir: str, config: RunnerConfig) -> dict[str
             "agents": [],
             "totals": {},
         },
+        "interface_normalization": [],
         "validation": {},
         "artifacts": {},
     }
@@ -55,6 +60,8 @@ def run_trace(fixture_path: str, out_dir: str, config: RunnerConfig) -> dict[str
     trace["projection_manifests"].append(plot_manifest)
     plot_output = _call_agent(provider, "plot", plot_ctx, fixture, trace)
     plot_packet = _payload(plot_output, "scene_pressure_packet")
+    plot_packet, notes = normalize_plot_packet(plot_packet)
+    _record_normalization(trace, notes)
     trace["validation"]["plot"] = validate_plot(plot_packet)
     if has_block(trace["validation"]["plot"]):
         return _finish_trace(trace, run_dir)
@@ -63,6 +70,8 @@ def run_trace(fixture_path: str, out_dir: str, config: RunnerConfig) -> dict[str
     trace["projection_manifests"].append(char_manifest)
     character_output = _call_agent(provider, "character", char_ctx, fixture, trace)
     dialogue_window = _payload(character_output, "dialogue_window")
+    dialogue_window, notes = normalize_dialogue_window(dialogue_window)
+    _record_normalization(trace, notes)
     trace["validation"]["character"] = validate_dialogue(dialogue_window)
     if has_block(trace["validation"]["character"]):
         return _finish_trace(trace, run_dir)
@@ -71,6 +80,8 @@ def run_trace(fixture_path: str, out_dir: str, config: RunnerConfig) -> dict[str
     trace["projection_manifests"].append(world_manifest)
     world_output = _call_agent(provider, "world", world_ctx, fixture, trace)
     world_bundle = _payload(world_output, "world_resolution_bundle")
+    world_bundle, notes = normalize_world_bundle(world_bundle)
+    _record_normalization(trace, notes)
     trace["validation"]["world"] = validate_world(world_bundle)
     if has_block(trace["validation"]["world"]):
         return _finish_trace(trace, run_dir)
@@ -223,3 +234,17 @@ def _finish_trace(trace: dict[str, Any], run_dir: str) -> dict[str, Any]:
     # Persist artifact paths into trace.json as the final step.
     write_json_file(trace_path, trace)
     return trace
+
+
+def _record_normalization(trace: dict[str, Any], notes: list[dict[str, Any]]) -> None:
+    if notes:
+        trace.setdefault("interface_normalization", []).extend(notes)
+
+
+def _run_id(created_at: str) -> str:
+    return (
+        created_at.replace("-", "")
+        .replace(":", "")
+        .replace("+", "Z")
+        .replace(".", "_")
+    )

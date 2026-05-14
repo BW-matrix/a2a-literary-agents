@@ -21,6 +21,8 @@ The MVP executes one `dramatic window`:
 
 Every model-agent prompt is built only from projected context. Full system objects are never passed to model-agents.
 
+Before validation and sealing, model-agent payloads pass through deterministic interface normalization. This adapts known schema aliases into canonical runtime fields without giving agents new authority.
+
 ## LLM Modes
 
 The runner supports four modes:
@@ -199,12 +201,15 @@ Current fixtures:
 
 Each run writes:
 
-- `runs/<trace-id>/trace.json`
-- `runs/<trace-id>/report.md`
+- `runs/<trace-id>/<run-id>/trace.json`
+- `runs/<trace-id>/<run-id>/report.md`
+
+`run-id` is derived from the UTC timestamp, so repeated runs of the same fixture do not overwrite earlier traces.
 
 The report includes:
 
 - token usage by agent and total
+- interface normalization notes
 - projection manifests
 - every agent's projected input context
 - every agent's raw output
@@ -240,11 +245,36 @@ Run tests:
 python -m unittest discover -s tests
 ```
 
+## Interface Normalization
+
+Real model output sometimes uses semantically equivalent field names. The runner normalizes known aliases before validation:
+
+| Object | Alias accepted | Canonical field |
+| --- | --- | --- |
+| `ScenePressurePacket` | string `budget_cost` | budget object with `source_shape` note |
+| `DialogueWindow` | `dialogue_window_id` | `window_id` |
+| `ResolvedEvent` | `participants` | `actors` |
+| `ResolvedEvent` | `event_type` | `event_kind` |
+| `VisibilityResult` | `visibility_id` | `visibility_result_id` |
+| `VisibilityResult` | `audience` | `observer_refs` |
+| `VisibilityResult` | `scope` | `observer_scope` |
+| `VisibilityResult` | `summary` | `visible_content` |
+| `StateDelta` | `target` | `target_id` |
+| `StateDelta` | `state_delta_id` | `delta_id` |
+| `StateDelta` | `target_ref` | `target_id` |
+| `StateDelta` | `change_type` | `change_kind` |
+| `StateDelta` | `after` | `after_summary` |
+| `AuthorizedInteriority` | `character_id` | `subject_id` |
+| `AuthorizedInteriority` | `authorized_contents` | `content` |
+
+Each normalization is recorded in `interface_normalization`. Missing security-critical fields should still be handled by validation, not silently invented as story facts.
+
 ## Current Limits
 
 - This is single-window only.
 - There is no repair loop yet; `repair_required` currently blocks.
 - Validators are intentionally minimal.
+- Interface normalization covers known aliases, not arbitrary schema repair.
 - Real API mode assumes an OpenAI-compatible `/chat/completions` endpoint.
 - Codex CLI mode is process-based and slower than direct API mode.
 - Token usage is recorded per agent. Direct API and Codex CLI JSON events use returned provider usage when available; otherwise the runner records local estimates.

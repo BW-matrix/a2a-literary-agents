@@ -55,6 +55,31 @@ def validate_world(bundle: dict[str, Any] | None) -> list[dict[str, Any]]:
     for field in ["input_refs", "applicable_rules", "constraint_basis", "outcome_type", "outcome_summary", "adjudication_basis"]:
         if field not in resolution:
             violations.append(_violation("world_resolution", "missing_resolution_field", f"Missing `{field}`."))
+
+    for index, item in enumerate(bundle.get("visibility_results", [])):
+        if not isinstance(item, dict):
+            violations.append(_violation("world_visibility", "invalid_visibility_result", f"`visibility_results[{index}]` must be an object."))
+            continue
+        for field in ["visibility_result_id", "observer_scope", "visible_content"]:
+            if field not in item or item.get(field) in (None, "", []):
+                violations.append(_violation("world_visibility", "missing_visibility_field", f"`visibility_results[{index}]` missing `{field}`."))
+        if "observer_refs" not in item or not isinstance(item.get("observer_refs"), list):
+            violations.append(_violation("world_visibility", "missing_visibility_field", f"`visibility_results[{index}]` must include list `observer_refs`, which may be empty for scoped ambient visibility."))
+
+    for index, event in enumerate(bundle.get("resolved_events", [])):
+        if not isinstance(event, dict):
+            violations.append(_violation("world_event", "invalid_resolved_event", f"`resolved_events[{index}]` must be an object."))
+            continue
+        if "event_id" not in event or "actors" not in event:
+            violations.append(_violation("world_event", "missing_event_interface_field", f"`resolved_events[{index}]` must include `event_id` and `actors`."))
+
+    for index, item in enumerate(bundle.get("authorized_interiority", [])):
+        if not isinstance(item, dict):
+            violations.append(_violation("world_interiority", "invalid_authorized_interiority", f"`authorized_interiority[{index}]` must be an object."))
+            continue
+        for field in ["interiority_id", "subject_id", "scope_limit"]:
+            if field not in item or item.get(field) in (None, "", []):
+                violations.append(_violation("world_interiority", "missing_interiority_field", f"`authorized_interiority[{index}]` missing `{field}`."))
     return violations
 
 

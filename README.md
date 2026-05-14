@@ -43,6 +43,7 @@ The repository now includes a minimal Python runner:
 - deterministic `mock` backend for fixtures and tests
 - isolated `codex-cli` backend for headless local Codex execution
 - OpenAI-compatible `real` backend for API-compatible providers
+- interface normalization between flexible model output and strict protocol objects
 - trace reports that include projected inputs, raw agent outputs, token usage, validation results, Judge verdicts, sealed packets, and memory handoff
 
 See [MVP Trace Runner v0.1](docs/runner/mvp-runner-v0.1.md).
@@ -112,6 +113,7 @@ python scripts/run_trace.py run --fixture fixtures/traces/allowed_archive_probe.
 - No repair loop yet.
 - Judge output is advisory-to-Orchestrator, but MVP currently converts `repair_required` and `block` into hard blocks.
 - Validators are intentionally minimal.
+- Interface normalization handles known schema aliases, but the canonical schema should still be tightened over time.
 - Codex CLI mode is slower than direct API mode because each agent call is a separate headless process.
 - Token usage is recorded per agent. Direct API and Codex CLI JSON events use returned provider usage when available; otherwise the runner records local estimates.
 

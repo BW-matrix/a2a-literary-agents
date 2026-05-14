@@ -208,12 +208,12 @@ def owner_projection(scene_packet: dict[str, Any], owner_agent_id: str) -> dict[
     visible_events = [
         event["event_id"]
         for event in scene_packet.get("resolved_events", [])
-        if owner_agent_id in event.get("actors", []) or event.get("visibility") in {owner_agent_id, "scene_pair", "scene_public"}
+        if owner_agent_id in event.get("actors", []) or owner_agent_id in event.get("participants", []) or event.get("visibility") in {owner_agent_id, "scene_pair", "scene_public"}
     ]
     owner_visibility = [
         item["visibility_result_id"]
         for item in scene_packet.get("visibility_deltas", [])
-        if owner_agent_id in item.get("observer_refs", []) or item.get("observer_scope") in {owner_agent_id, "scene_pair", "scene_public"}
+        if owner_agent_id in item.get("observer_refs", []) or item.get("observer_scope") in {owner_agent_id, "scene_pair", "scene_public", "private_character_facing"}
     ]
     return {
         "owner_agent_id": owner_agent_id,
@@ -221,7 +221,7 @@ def owner_projection(scene_packet: dict[str, Any], owner_agent_id: str) -> dict[
         "owner_impacts": [
             delta["delta_id"]
             for delta in scene_packet.get("state_deltas", [])
-            if delta.get("target_id") == owner_agent_id
+            if delta.get("target_id") == owner_agent_id or delta.get("target") == owner_agent_id
         ],
         "owner_visibility": owner_visibility,
         "authorized_inner_material": [

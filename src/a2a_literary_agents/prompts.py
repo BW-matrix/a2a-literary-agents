@@ -14,7 +14,9 @@ AGENT_INSTRUCTIONS = {
         "Return exactly one JSON object with shape: {\"scene_pressure_packet\": {...}}. "
         "The packet must include: pressure_id, pressure_kind, scope, duration, "
         "affected_options, non_forcing_clause, world_fact_dependency, "
-        "forbidden_outcomes, visibility, budget_cost, based_on."
+        "forbidden_outcomes, visibility, budget_cost, based_on. "
+        "budget_cost must be an object with intensity, novelty, stacking_count, "
+        "relief_available, and agency_risk; do not return it as a string."
     ),
     "character": (
         "You are Character Agent. Produce one DialogueWindow. You may decide your own "
@@ -33,7 +35,13 @@ AGENT_INSTRUCTIONS = {
         "visibility_results, publication_candidates, public_event_deltas, "
         "canon_reveal_candidates, canon_effects_committed, authorized_interiority. "
         "The resolution must include: resolution_id, input_refs, applicable_rules, "
-        "constraint_basis, outcome_type, outcome_summary, adjudication_basis."
+        "constraint_basis, outcome_type, outcome_summary, adjudication_basis. "
+        "Every VisibilityResult must use exact fields: visibility_result_id, "
+        "source_resolution_id, observer_scope, observer_refs, visible_content, "
+        "certainty, exposure_mode, limits. Do not use visibility_id, audience, "
+        "scope, or summary as replacements. Every resolved event must include "
+        "event_id and actors. Every authorized_interiority item must include "
+        "interiority_id, subject_id, content, authority_basis, and scope_limit."
     ),
     "narrator": (
         "You are Narrator Agent. Produce prose only from NarratorInputPacket. "
